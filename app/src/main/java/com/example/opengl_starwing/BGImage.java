@@ -1,7 +1,5 @@
 package com.example.opengl_starwing;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -18,7 +16,7 @@ import android.opengl.GLUtils;
  * Define the vertices for only one representative face.
  * Render the cube by translating and rotating the face.
  */
-public class TextureCube {
+public class BGImage implements Drawable{
     private FloatBuffer vertexBuffer; // Buffer for vertex-array
     private FloatBuffer texBuffer;    // Buffer for texture-coords-array (NEW)
 
@@ -38,7 +36,7 @@ public class TextureCube {
     int[] textureIDs = new int[1];   // Array for 1 texture-ID (NEW)
 
     // Constructor - Set up the buffers
-    public TextureCube() {
+    public BGImage() {
         // Setup vertex-array buffer. Vertices in float. An float has 4 bytes
         ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * 4);
         vbb.order(ByteOrder.nativeOrder()); // Use native byte order
@@ -55,6 +53,7 @@ public class TextureCube {
     }
 
     // Draw the shape
+    @Override
     public void draw(GL10 gl) {
         gl.glColor4f(1,1,1,1);
 
@@ -74,40 +73,6 @@ public class TextureCube {
         gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
         gl.glPopMatrix();
 
-        // left
-        gl.glPushMatrix();
-        gl.glRotatef(270.0f, 0.0f, 1.0f, 0.0f);
-        gl.glTranslatef(0.0f, 0.0f, 1.0f);
-        gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
-        gl.glPopMatrix();
-
-        // back
-        gl.glPushMatrix();
-        gl.glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
-        gl.glTranslatef(0.0f, 0.0f, 1.0f);
-        gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
-        gl.glPopMatrix();
-
-        // right
-        gl.glPushMatrix();
-        gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-        gl.glTranslatef(0.0f, 0.0f, 1.0f);
-        gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
-        gl.glPopMatrix();
-
-        // top
-        gl.glPushMatrix();
-        gl.glRotatef(270.0f, 1.0f, 0.0f, 0.0f);
-        gl.glTranslatef(0.0f, 0.0f, 1.0f);
-        gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
-        gl.glPopMatrix();
-
-        // bottom
-        gl.glPushMatrix();
-        gl.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-        gl.glTranslatef(0.0f, 0.0f, 1.0f);
-        gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
-        gl.glPopMatrix();
 
         gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);  // Disable texture-coords-array (NEW)
         gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
@@ -116,17 +81,22 @@ public class TextureCube {
     }
 
     // Load an image into GL texture
-    public void loadTexture(GL10 gl, Context context) {
+    public void loadTexture(GL10 gl, Context context, int num) {
         gl.glGenTextures(1, textureIDs, 0); // Generate texture-ID array
 
         gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[0]);   // Bind to texture ID
         // Set up texture filters
         gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
-        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
+        gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
 
-        // Construct a bitmap from "res\drawable\corneria.png"
-        Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.corneria);
-
+        Bitmap bitmap;
+        if(num == 0) {
+            // Construct a bitmap from "res\drawable\venom1.png"
+            bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.venom1);
+        } else {
+            // Construct a bitmap from "res\drawable\venom1lightning.png"
+            bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.venom1lightning);
+        }
         // Build Texture from loaded bitmap for the currently-bind texture ID
         GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();

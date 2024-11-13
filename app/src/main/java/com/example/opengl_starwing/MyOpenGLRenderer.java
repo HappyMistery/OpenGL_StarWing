@@ -7,9 +7,27 @@ import android.content.Context;
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 public class MyOpenGLRenderer implements Renderer {
-	private TextureCube textureCube;  // 3D object representing a textured cube
-	private Square squareText;  // Object representing a 2D square
+	private List<BGImage> bg;
+	private int lightningNum = 10;
+	private int lightTime = 0;
+	private int lightDuration = 5;
+	private boolean lightOn = false;
+	private Random random = new Random();
+	private int randomNumber;
+
+	private HUD hud;
+
+	private Object3D arwing;
+	private float arwingX = 0.0f;
+	private float arwingY = 0.0f;
+	private int arwingAng = 0;
+
+	private Light light;
 
 	// zCam is the Z-axis camera position
 	private float zCam = 0;
@@ -51,12 +69,25 @@ public class MyOpenGLRenderer implements Renderer {
 		// Set background color (black with slight transparency)
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
 
-		// Initialize the 3D objects (textureCube and square)
-		textureCube = new TextureCube(); // 3D cube object
-		squareText = new Square(); // 2D square object
+		bg = new ArrayList<BGImage>(4);
+		for (int i = 0; i<4; i++) {
+			BGImage img = new BGImage();
+			bg.add(i,img);
+		}
+		hud = new HUD();
 
-		// Load the texture for the cube using OpenGL
-		textureCube.loadTexture(gl, context);
+		// Load the texture for the cubes using OpenGL
+		for (int i = 0; i<4; i++) {
+			bg.get(i).loadTexture(gl, context, 0);
+		}
+
+		arwing = new Object3D(context, R.raw.nau);
+
+		gl.glEnable(GL10.GL_LIGHTING);
+		light = new Light(gl, GL10.GL_LIGHT0);
+		light.setPosition(new float[]{0.0f, 0f, 1, 0.0f});
+		light.setAmbientColor(new float[]{0.1f, 0.1f, 0.1f});
+		light.setDiffuseColor(new float[]{1, 1, 1});
 	}
 
 	// Called each frame, this draws both the 3D scene and HUD
@@ -68,27 +99,55 @@ public class MyOpenGLRenderer implements Renderer {
 		// Clear the screen (color and depth buffer)
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
+		light.setPosition(new float[]{1, 0f, 5, 0});
+
 		// Set camera position using gluLookAt (placing the camera at zCam + 5 units away)
 		GLU.gluLookAt(gl, 0, 0, 5 + zCam, 0f, 0f, 0f, 0f, 1f, 0f);
 
-		// Draw the cube in the scene
+		// Display some lighting every once in a while
+		randomNumber = random.nextInt(120) + 1;
+		if(randomNumber == lightningNum) {
+			for (int i = 0; i<4; i++) {
+				bg.get(i).loadTexture(gl, context, 1);
+				lightOn = true;
+			}
+		}
+
+		// Draw the background in the scene
 		gl.glPushMatrix(); // Save the current transformation matrix
-		gl.glScalef(2f, 2f, 2f); // Scale the cube by a factor of 2
-		gl.glRotatef((angle) % 360, 1, 1, 0); // Rotate the cube around the X and Y axes
-		textureCube.draw(gl); // Render the cube
+		gl.glScalef(4f, 3.0f, 0.0f); // Scale the image
+		gl.glRotatef((angle) % 360, 1, 1, 0); // Rotate the image around the X and Y axes
+		gl.glTranslatef(-2.725f, 0.0f, -5.0f);
+		bg.get(0).draw(gl);
+		gl.glTranslatef(1.725f, 0.0f, 0.0f);
+		bg.get(1).draw(gl);
+		gl.glTranslatef(1.725f, 0.0f, 0.0f);
+		bg.get(0).draw(gl);
+		gl.glTranslatef(1.725f, 0.0f, 0.0f);
+		bg.get(1).draw(gl);
 		gl.glPopMatrix(); // Restore the transformation matrix
 
-		// Switch to 2D mode (HUD)
-		setOrthographicProjection(gl);
+		// Draw the Arwing
+		gl.glPushMatrix(); // Save the current transformation matrix
+		gl.glScalef(1f, 1.0f, 1.0f); // Scale the Arwing
+		gl.glTranslatef(arwingX, arwingY, 3.0f);
+		gl.glRotatef((arwingAng) % 360, 0, 0, 1); // Rotate the arwing
+		arwing.draw(gl);
+		gl.glPopMatrix(); // Restore the transformation matrix
 
-		/*
-		// This is commented out; it would draw a 2D square on the HUD
-		gl.glPushMatrix();
-		gl.glTranslatef(0, 0, 0);
-		gl.glScalef(2f, 2f, 2f);
-		squareText.draw(gl); // Draw the 2D square on the HUD
-		gl.glPopMatrix();
-		*/
+		if(lightOn) lightTime++;
+
+		if(lightTime == lightDuration) {
+			for (int i = 0; i<4; i++) {
+				bg.get(i).loadTexture(gl, context, 0);
+			}
+			lightTime = 0;
+			lightDuration = random.nextInt(17) + 3;
+		}
+
+		// Switch to 2D mode (HUD) and draw the HUD
+		setOrthographicProjection(gl);
+		hud.draw(gl);
 	}
 
 	// Set up perspective projection for 3D rendering
@@ -137,5 +196,14 @@ public class MyOpenGLRenderer implements Renderer {
 
 		// Set the OpenGL viewport to match the new window dimensions
 		gl.glViewport(0, 0, width, height);
+	}
+
+	public void moveArwing(float deltaX, float deltaY) {
+		arwingX += deltaX;
+		arwingY += deltaY;
+	}
+
+	public void rotateArwing(int angle) {
+		arwingAng += angle;
 	}
 }
