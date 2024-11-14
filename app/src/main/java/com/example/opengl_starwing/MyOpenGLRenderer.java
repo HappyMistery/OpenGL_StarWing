@@ -12,7 +12,8 @@ import java.util.List;
 import java.util.Random;
 
 public class MyOpenGLRenderer implements Renderer {
-	private List<BGImage> bg;
+	private BGImage bg;
+	private BGImage lightBG;
 	private int lightningNum = 10;
 	private int lightTime = 0;
 	private int lightDuration = 5;
@@ -28,6 +29,12 @@ public class MyOpenGLRenderer implements Renderer {
 	private int arwingAng = 0;
 
 	private Light light;
+
+	private int groundPointsXSpacing = 32;
+	private int groundPointsYSpacing = 8;
+	private int groundPointsPerRow = 21;
+	private int groundPointsPerCol = 21;
+	private Scene scene;
 
 	// zCam is the Z-axis camera position
 	private float zCam = 0;
@@ -69,25 +76,20 @@ public class MyOpenGLRenderer implements Renderer {
 		// Set background color (black with slight transparency)
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
 
-		bg = new ArrayList<BGImage>(4);
-		for (int i = 0; i<4; i++) {
-			BGImage img = new BGImage();
-			bg.add(i,img);
-		}
-		hud = new HUD();
+		bg = new BGImage();
 
-		// Load the texture for the cubes using OpenGL
-		for (int i = 0; i<4; i++) {
-			bg.get(i).loadTexture(gl, context, 0);
-		}
+
+		hud = new HUD();
 
 		arwing = new Object3D(context, R.raw.nau);
 
 		gl.glEnable(GL10.GL_LIGHTING);
 		light = new Light(gl, GL10.GL_LIGHT0);
 		light.setPosition(new float[]{0.0f, 0f, 1, 0.0f});
-		light.setAmbientColor(new float[]{0.1f, 0.1f, 0.1f});
+		light.setAmbientColor(new float[]{0.6f, 0.6f, 0.6f});
 		light.setDiffuseColor(new float[]{1, 1, 1});
+
+		scene = new Scene();
 	}
 
 	// Called each frame, this draws both the 3D scene and HUD
@@ -99,32 +101,39 @@ public class MyOpenGLRenderer implements Renderer {
 		// Clear the screen (color and depth buffer)
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
-		light.setPosition(new float[]{1, 0f, 5, 0});
+		light.setPosition(new float[]{0, 2f, -2, 0});
 
 		// Set camera position using gluLookAt (placing the camera at zCam + 5 units away)
 		GLU.gluLookAt(gl, 0, 0, 5 + zCam, 0f, 0f, 0f, 0f, 1f, 0f);
 
-		// Display some lighting every once in a while
-		randomNumber = random.nextInt(120) + 1;
-		if(randomNumber == lightningNum) {
-			for (int i = 0; i<4; i++) {
-				bg.get(i).loadTexture(gl, context, 1);
-				lightOn = true;
-			}
-		}
-
 		// Draw the background in the scene
 		gl.glPushMatrix(); // Save the current transformation matrix
-		gl.glScalef(4f, 3.0f, 0.0f); // Scale the image
+		gl.glScalef(8f, 8f, 0.0f); // Scale the image
 		gl.glRotatef((angle) % 360, 1, 1, 0); // Rotate the image around the X and Y axes
-		gl.glTranslatef(-2.725f, 0.0f, -5.0f);
-		bg.get(0).draw(gl);
-		gl.glTranslatef(1.725f, 0.0f, 0.0f);
-		bg.get(1).draw(gl);
-		gl.glTranslatef(1.725f, 0.0f, 0.0f);
-		bg.get(0).draw(gl);
-		gl.glTranslatef(1.725f, 0.0f, 0.0f);
-		bg.get(1).draw(gl);
+		gl.glTranslatef(0f, 0.39f, -15.0f);
+
+		// Display some lighting every once in a while
+		randomNumber = random.nextInt(100) + 1;
+		if(randomNumber != lightningNum && !lightOn) {
+			bg.loadTexture(gl, context, R.drawable.venom1);
+			bg.draw(gl);
+		} else {
+			bg.loadTexture(gl, context, R.drawable.venom1lightning);
+			bg.draw(gl);
+			lightOn = true;
+
+			light.setPosition(new float[]{0.0f, 1f, 0, 0.0f});
+			light.setAmbientColor(new float[]{0.4f, 0.4f, 0.6f});
+		}
+		gl.glPopMatrix(); // Restore the transformation matrix
+
+		gl.glPushMatrix(); // Save the current transformation matrix
+		gl.glScalef(0.06f, 0.06f, 0.06f);
+		gl.glRotatef(15, 1, 0, 0);
+		int gpZ = (groundPointsYSpacing * groundPointsPerCol)/2;
+		int gpX = (groundPointsXSpacing * groundPointsPerRow)/2;
+		gl.glTranslatef(-gpX, -10f, -gpZ);
+		scene.draw(gl);
 		gl.glPopMatrix(); // Restore the transformation matrix
 
 		// Draw the Arwing
@@ -135,14 +144,16 @@ public class MyOpenGLRenderer implements Renderer {
 		arwing.draw(gl);
 		gl.glPopMatrix(); // Restore the transformation matrix
 
-		if(lightOn) lightTime++;
+		if(lightOn) {
+			lightTime++;
+			if(lightTime == lightDuration) {
+				lightTime = 0;
+				lightDuration = random.nextInt(17) + 3;
+				lightOn = false;
 
-		if(lightTime == lightDuration) {
-			for (int i = 0; i<4; i++) {
-				bg.get(i).loadTexture(gl, context, 0);
+				light.setPosition(new float[]{0.0f, 0f, 1, 0.0f});
+				light.setAmbientColor(new float[]{0.6f, 0.6f, 0.6f});
 			}
-			lightTime = 0;
-			lightDuration = random.nextInt(17) + 3;
 		}
 
 		// Switch to 2D mode (HUD) and draw the HUD

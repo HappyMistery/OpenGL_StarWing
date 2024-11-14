@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.KeyEvent;
-import android.view.MotionEvent;
 
 public class MainActivity extends Activity {
     private static final float TOUCH_SCALE_FACTOR = 1440;
@@ -36,10 +35,10 @@ public class MainActivity extends Activity {
                 myGLRenderer.moveArwing(0.05f, 0); // Move right
                 break;
             case KeyEvent.KEYCODE_Q:
-                myGLRenderer.rotateArwing(-90); // Rotate right
+                myGLRenderer.rotateArwing(90); // Rotate right
                 break;
             case KeyEvent.KEYCODE_E:
-                myGLRenderer.rotateArwing(90); // Rotate left
+                myGLRenderer.rotateArwing(-90); // Rotate left
                 break;
             default:
                 // If none of the keys match, call the superclass method

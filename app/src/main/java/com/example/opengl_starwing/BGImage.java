@@ -81,7 +81,7 @@ public class BGImage implements Drawable{
     }
 
     // Load an image into GL texture
-    public void loadTexture(GL10 gl, Context context, int num) {
+    public void loadTexture(GL10 gl, Context context, int fileNameID) {
         gl.glGenTextures(1, textureIDs, 0); // Generate texture-ID array
 
         gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[0]);   // Bind to texture ID
@@ -90,13 +90,8 @@ public class BGImage implements Drawable{
         gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
 
         Bitmap bitmap;
-        if(num == 0) {
-            // Construct a bitmap from "res\drawable\venom1.png"
-            bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.venom1);
-        } else {
-            // Construct a bitmap from "res\drawable\venom1lightning.png"
-            bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.venom1lightning);
-        }
+        // Construct a bitmap for the specified file
+        bitmap = BitmapFactory.decodeResource(context.getResources(), fileNameID);
         // Build Texture from loaded bitmap for the currently-bind texture ID
         GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
