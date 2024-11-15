@@ -20,8 +20,10 @@ public class HUD implements Drawable{
     }
 
     public void draw(GL10 gl) {
+        gl.glDisable(GL10.GL_LIGHTING);
         for (Drawable lmn : GUI_lmns) {
             lmn.draw(gl);  // Calls the draw method of each element
         }
+        gl.glEnable(GL10.GL_LIGHTING);
     }
 }

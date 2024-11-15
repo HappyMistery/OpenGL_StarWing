@@ -8,6 +8,9 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class GroundPoints implements Drawable{
     private List<Cube> cubeList;
+    private float x;
+    private float y;
+    private float z;
     private int rows;
     private int cols;
     private float cubeXSpacing;
@@ -21,6 +24,25 @@ public class GroundPoints implements Drawable{
         this.cubeYSpacing = cubeYSpacing;
         cubeList = new ArrayList<>();
         createCubeMatrix();
+    }
+
+    public void setPosition(float x, float y, float z)
+    {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public float getZ() {
+        return z;
     }
 
     // Method to create a matrix of cubes
@@ -39,9 +61,15 @@ public class GroundPoints implements Drawable{
     // Method to draw the cubes
     @Override
     public void draw(GL10 gl) {
+        gl.glDisable(GL10.GL_LIGHTING);
+        gl.glTranslatef(0, y, z);
+        //System.out.println("GPz = " + z);
         for (Cube cube : cubeList) {
             cube.draw(gl);
         }
+        gl.glEnable(GL10.GL_LIGHTING);
     }
+
+
 }
 

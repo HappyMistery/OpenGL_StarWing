@@ -7,54 +7,48 @@ import android.content.Context;
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 public class MyOpenGLRenderer implements Renderer {
+	private float camX = 0.0f;
+	private float camY = 0.0f;
+	private static final float CAMERA_SMOOTHNESS = 0.1f;
+
 	private BGImage bg;
-	private BGImage lightBG;
-	private int lightningNum = 10;
-	private int lightTime = 0;
+    private int lightTime = 0;
 	private int lightDuration = 5;
 	private boolean lightOn = false;
-	private Random random = new Random();
-	private int randomNumber;
+	private final Random random = new Random();
 
-	private HUD hud;
+    private HUD hud;
 
 	private Object3D arwing;
 	private float arwingX = 0.0f;
 	private float arwingY = 0.0f;
-	private int arwingAng = 0;
+	private float arwingAng = 0;
+	private float targetArwingAng = 0; // New field for the target angle
+	private static final float ROTATION_SPEED = 0.1f; // Adjust the speed of rotation
 
 	private Light light;
 
-	private int groundPointsXSpacing = 32;
-	private int groundPointsYSpacing = 8;
-	private int groundPointsPerRow = 21;
-	private int groundPointsPerCol = 21;
-	private Scene scene;
+    private Scene scene;
 
-	// zCam is the Z-axis camera position
-	private float zCam = 0;
-
-	// Angle is used for rotating the cube
-	private int angle = 0;
-
-	// Context allows access to Android resources like textures
-	private Context context;
+    // Context allows access to Android resources like textures
+	private final Context context;
 
 	// Width and height of the rendering area (screen)
 	private int width;
 	private int height;
+	float halfWidth;
+	float halfHeight = 4f;
 
 	// Constructor that initializes the context
 	public MyOpenGLRenderer(Context context){
 		this.context = context;
 	}
 
-	// Getters and setters for zCam, width, and height
+	/*
+	//Getters and setters for zCam, width, and height
 	public float getzCam() {
 		return zCam;
 	}
@@ -70,6 +64,7 @@ public class MyOpenGLRenderer implements Renderer {
 	public int getHeight() {
 		return height;
 	}
+	*/
 
 	// Called when the surface is created, this initializes the background and objects
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -77,6 +72,9 @@ public class MyOpenGLRenderer implements Renderer {
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
 
 		bg = new BGImage();
+		bg.loadTexture(gl, context, R.drawable.venom1);
+		bg.loadTexture(gl, context, R.drawable.venom1lightning);
+
 
 
 		hud = new HUD();
@@ -89,7 +87,13 @@ public class MyOpenGLRenderer implements Renderer {
 		light.setAmbientColor(new float[]{0.6f, 0.6f, 0.6f});
 		light.setDiffuseColor(new float[]{1, 1, 1});
 
-		scene = new Scene();
+		int groundPointsYSpacing = 8;
+		int groundPointsPerCol = 21;
+		int gpZ = (groundPointsYSpacing * groundPointsPerCol)/2;
+		int groundPointsXSpacing = 32;
+		int groundPointsPerRow = 11;
+		int gpX = (groundPointsXSpacing * groundPointsPerRow)/2;
+		scene = new Scene(gpX,-10f, gpZ);
 	}
 
 	// Called each frame, this draws both the 3D scene and HUD
@@ -103,23 +107,33 @@ public class MyOpenGLRenderer implements Renderer {
 
 		light.setPosition(new float[]{0, 2f, -2, 0});
 
+		// Smoothly move the camera towards the Arwing's position
+		camX += ((arwingX - camX) * CAMERA_SMOOTHNESS)/2;
+		camY += ((arwingY - camY) * CAMERA_SMOOTHNESS)/2;
+
+		camX = Math.max(-halfWidth/2, Math.min(camX, halfWidth/2));
+		camY = Math.max(-halfHeight/2, Math.min(camY, halfHeight/2));
+
 		// Set camera position using gluLookAt (placing the camera at zCam + 5 units away)
-		GLU.gluLookAt(gl, 0, 0, 5 + zCam, 0f, 0f, 0f, 0f, 1f, 0f);
+        // zCam is the Z-axis camera position
+        float zCam = 0;
+        GLU.gluLookAt(gl, camX, camY, 5 + zCam, camX, camY, 0f, 0f, 1f, 0f);
 
 		// Draw the background in the scene
 		gl.glPushMatrix(); // Save the current transformation matrix
 		gl.glScalef(8f, 8f, 0.0f); // Scale the image
-		gl.glRotatef((angle) % 360, 1, 1, 0); // Rotate the image around the X and Y axes
+        // Angle is used for rotating the cube
+        int angle = 0;
+        gl.glRotatef((angle) % 360, 1, 1, 0); // Rotate the image around the X and Y axes
 		gl.glTranslatef(0f, 0.39f, -15.0f);
 
 		// Display some lighting every once in a while
-		randomNumber = random.nextInt(100) + 1;
-		if(randomNumber != lightningNum && !lightOn) {
-			bg.loadTexture(gl, context, R.drawable.venom1);
-			bg.draw(gl);
+        int randomNumber = random.nextInt(100) + 1;
+        int lightningNum = 10;
+        if(randomNumber != lightningNum && !lightOn) {
+			bg.drawImage(gl, 0);
 		} else {
-			bg.loadTexture(gl, context, R.drawable.venom1lightning);
-			bg.draw(gl);
+			bg.drawImage(gl, 1);
 			lightOn = true;
 
 			light.setPosition(new float[]{0.0f, 1f, 0, 0.0f});
@@ -129,10 +143,7 @@ public class MyOpenGLRenderer implements Renderer {
 
 		gl.glPushMatrix(); // Save the current transformation matrix
 		gl.glScalef(0.06f, 0.06f, 0.06f);
-		gl.glRotatef(15, 1, 0, 0);
-		int gpZ = (groundPointsYSpacing * groundPointsPerCol)/2;
-		int gpX = (groundPointsXSpacing * groundPointsPerRow)/2;
-		gl.glTranslatef(-gpX, -10f, -gpZ);
+		//gl.glRotatef(25, 1, 0, 0);
 		scene.draw(gl);
 		gl.glPopMatrix(); // Restore the transformation matrix
 
@@ -141,6 +152,10 @@ public class MyOpenGLRenderer implements Renderer {
 		gl.glScalef(1f, 1.0f, 1.0f); // Scale the Arwing
 		gl.glTranslatef(arwingX, arwingY, 3.0f);
 		gl.glRotatef((arwingAng) % 360, 0, 0, 1); // Rotate the arwing
+		// Gradually rotate the Arwing towards the target angle
+		if (Math.abs(targetArwingAng - arwingAng) > 0.01f) {
+			arwingAng += (targetArwingAng - arwingAng) * ROTATION_SPEED;
+		}
 		arwing.draw(gl);
 		gl.glPopMatrix(); // Restore the transformation matrix
 
@@ -148,7 +163,7 @@ public class MyOpenGLRenderer implements Renderer {
 			lightTime++;
 			if(lightTime == lightDuration) {
 				lightTime = 0;
-				lightDuration = random.nextInt(17) + 3;
+				lightDuration = random.nextInt(13) + 3;
 				lightOn = false;
 
 				light.setPosition(new float[]{0.0f, 0f, 1, 0.0f});
@@ -205,16 +220,20 @@ public class MyOpenGLRenderer implements Renderer {
 		this.width = width; // Store the new width
 		this.height = height; // Store the new height
 
+		halfWidth = (float) width / height;
+		halfHeight= (float) (width / height) / 2;
+
 		// Set the OpenGL viewport to match the new window dimensions
 		gl.glViewport(0, 0, width, height);
 	}
 
 	public void moveArwing(float deltaX, float deltaY) {
-		arwingX += deltaX;
-		arwingY += deltaY;
+		// Clamp the Arwing's position to keep it within the viewport
+		arwingX = Math.max(-halfWidth, Math.min(arwingX+=deltaX, halfWidth));
+		arwingY = Math.max(-halfHeight, Math.min(arwingY+=deltaY, halfHeight));
 	}
 
 	public void rotateArwing(int angle) {
-		arwingAng += angle;
+		targetArwingAng = arwingAng + angle;
 	}
 }

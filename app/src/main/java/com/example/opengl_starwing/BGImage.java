@@ -19,6 +19,7 @@ import android.opengl.GLUtils;
 public class BGImage implements Drawable{
     private FloatBuffer vertexBuffer; // Buffer for vertex-array
     private FloatBuffer texBuffer;    // Buffer for texture-coords-array (NEW)
+    private int texIndex = 0;
 
     private float[] vertices = { // Vertices for a face
             -1.0f, -1.0f, 0.0f,  // 0. left-bottom-front
@@ -33,7 +34,7 @@ public class BGImage implements Drawable{
             0.0f, 0.0f,  // C. left-top (NEW)
             1.0f, 0.0f   // D. right-top (NEW)
     };
-    int[] textureIDs = new int[1];   // Array for 1 texture-ID (NEW)
+    int[] textureIDs = new int[2];   // Array for 1 texture-ID (NEW)
 
     // Constructor - Set up the buffers
     public BGImage() {
@@ -52,9 +53,15 @@ public class BGImage implements Drawable{
         texBuffer.position(0);
     }
 
-    // Draw the shape
     @Override
     public void draw(GL10 gl) {
+    }
+
+    // Draw the shape
+    //@Override
+    public void drawImage(GL10 gl, int texID) {
+        gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[texID]);
+        gl.glDisable(GL10.GL_LIGHTING);
         gl.glColor4f(1,1,1,1);
 
         gl.glFrontFace(GL10.GL_CCW);    // Front face in counter-clockwise orientation
@@ -78,13 +85,14 @@ public class BGImage implements Drawable{
         gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
         gl.glDisable(GL10.GL_CULL_FACE);
         gl.glDisable(GL10.GL_TEXTURE_2D);  // Enable texture (NEW));
+        gl.glEnable(GL10.GL_LIGHTING);
     }
 
     // Load an image into GL texture
     public void loadTexture(GL10 gl, Context context, int fileNameID) {
-        gl.glGenTextures(1, textureIDs, 0); // Generate texture-ID array
+        gl.glGenTextures(1, textureIDs, texIndex); // Generate texture-ID array
 
-        gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[0]);   // Bind to texture ID
+        gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[texIndex]);   // Bind to texture ID
         // Set up texture filters
         gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
         gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
@@ -95,5 +103,6 @@ public class BGImage implements Drawable{
         // Build Texture from loaded bitmap for the currently-bind texture ID
         GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
+        texIndex++;
     }
 }
