@@ -25,8 +25,13 @@ public class MyOpenGLRenderer implements Renderer {
 	private Object3D arwing;
 	private float arwingX = 0.0f;
 	private float arwingY = 0.0f;
-	private float arwingAng = 0;
-	private float targetArwingAng = 0; // New field for the target angle
+	private float arwingYaw = 0;  // Rotation angle around the Z-axis
+	private float arwingRoll = 0f; // Rotation angle around the Y-axis
+	private float arwingPitch = 0f; // Rotation angle around the X-axis
+	private float targetArwingYaw = 0;
+	private float targetArwingRoll = 0;
+	private float targetArwingPitch = 0;
+	private static final float MAX_ROLL_ANGLE = 10.0f; // Maximum rotation angle on Y-axis
 	private static final float ROTATION_SPEED = 0.1f; // Adjust the speed of rotation
 
 	private Light light;
@@ -46,25 +51,6 @@ public class MyOpenGLRenderer implements Renderer {
 	public MyOpenGLRenderer(Context context){
 		this.context = context;
 	}
-
-	/*
-	//Getters and setters for zCam, width, and height
-	public float getzCam() {
-		return zCam;
-	}
-
-	public void setzCam(float zCam) {
-		this.zCam = zCam;
-	}
-
-	public int getWidth() {
-		return width;
-	}
-
-	public int getHeight() {
-		return height;
-	}
-	*/
 
 	// Called when the surface is created, this initializes the background and objects
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -151,10 +137,18 @@ public class MyOpenGLRenderer implements Renderer {
 		gl.glPushMatrix(); // Save the current transformation matrix
 		gl.glScalef(1f, 1.0f, 1.0f); // Scale the Arwing
 		gl.glTranslatef(arwingX, arwingY, 3.0f);
-		gl.glRotatef((arwingAng) % 360, 0, 0, 1); // Rotate the arwing
+		gl.glRotatef((arwingYaw) % 360, 0, 0, 1); // Tilt the arwing
+		gl.glRotatef(arwingRoll, 0, 1, 0); // Roll the arwing
+		gl.glRotatef(arwingPitch, 1, 0, 0); // Pitch the arwing
 		// Gradually rotate the Arwing towards the target angle
-		if (Math.abs(targetArwingAng - arwingAng) > 0.01f) {
-			arwingAng += (targetArwingAng - arwingAng) * ROTATION_SPEED;
+		if (Math.abs(targetArwingYaw - arwingYaw) > 0.01f) {
+			arwingYaw += (targetArwingYaw - arwingYaw) * ROTATION_SPEED;
+		}
+		if (Math.abs(targetArwingRoll - arwingRoll) > 0.01f) {
+			arwingRoll += (targetArwingRoll - arwingRoll) * ROTATION_SPEED;
+		}
+		if (Math.abs(targetArwingPitch - arwingPitch) > 0.01f) {
+			arwingPitch += (targetArwingPitch - arwingPitch) * ROTATION_SPEED;
 		}
 		arwing.draw(gl);
 		gl.glPopMatrix(); // Restore the transformation matrix
@@ -231,9 +225,35 @@ public class MyOpenGLRenderer implements Renderer {
 		// Clamp the Arwing's position to keep it within the viewport
 		arwingX = Math.max(-halfWidth, Math.min(arwingX+=deltaX, halfWidth));
 		arwingY = Math.max(-halfHeight, Math.min(arwingY+=deltaY, halfHeight));
+		float rotationAngle = 15;
+		if (deltaX > 0) {
+			targetArwingYaw = -rotationAngle; // Tilt right when moving right
+			targetArwingRoll = -rotationAngle*2; // Rotate right on Y-axis
+		} else if (deltaX < 0) {
+			targetArwingYaw = rotationAngle; // Tilt left when moving left
+			targetArwingRoll = rotationAngle*2; // Rotate left on Y-axis
+		} else {
+			targetArwingYaw = 0; // No tilt when not moving horizontally
+			targetArwingRoll = 0; // No rotation on Y-axis when not moving horizontally
+		}
+
+		if (deltaY > 0) {
+			targetArwingPitch = rotationAngle*3;
+		} else if (deltaY < 0) {
+			targetArwingPitch = -rotationAngle/2;
+		} else {
+			targetArwingPitch = 0;
+		}
 	}
 
 	public void rotateArwing(int angle) {
-		targetArwingAng = arwingAng + angle;
+		targetArwingYaw = arwingYaw + angle;
+	}
+
+	public void stopArwingAngle() {
+		targetArwingYaw = 0;
+		targetArwingRoll = 0;
+		targetArwingPitch = 0;
+
 	}
 }

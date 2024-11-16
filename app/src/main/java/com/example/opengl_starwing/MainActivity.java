@@ -7,8 +7,8 @@ import android.os.Handler;
 import android.view.MotionEvent;
 
 public class MainActivity extends Activity {
-    private static final float MOVEMENT_SPEED = 0.05f;
-    private static final float DIAGONAL_TOLERANCE = 250f; // Tolerance (in pixels) for diagonal movement
+    private static final float MOVEMENT_SPEED = 0.025f;
+    private static final float DIAGONAL_TOLERANCE = 100f; // Tolerance (in pixels) for diagonal movement
     private float initialX, initialY;
     private MyOpenGLRenderer myGLRenderer;
 
@@ -80,6 +80,7 @@ public class MainActivity extends Activity {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 isMoving = false; // Stop movement when touch is released
+                myGLRenderer.stopArwingAngle();
                 return true;
         }
         return false;
