@@ -37,9 +37,6 @@ public class Scene {
 
     public void draw(GL10 gl) {
         z+=SPEED;
-        //System.out.println("z: " + z);
-        //System.out.println("initialZ: " + prevZ);
-        //System.out.println("Math.abs(z%-84): " + Math.abs(z%-84));
         gl.glPushMatrix();
         gl.glTranslatef(x, y, z);
         for (Drawable lmn : dyObjs) {

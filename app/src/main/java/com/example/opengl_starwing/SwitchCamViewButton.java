@@ -2,49 +2,28 @@ package com.example.opengl_starwing;
 
 import javax.microedition.khronos.opengles.GL10;
 
-public class HealthBar implements Drawable {
-    private float x, y, width, height, borderHeight, borderWidth; // Position and size of the health bar
-    private float healthPercentage;    // Health percentage (0 to 1)
+public class SwitchCamViewButton implements Drawable {
+    private float x, y, width, height, borderHeight, borderWidth; // Position and size of the cam view button
 
-    public HealthBar(float x, float y, float width, float height) {
+    public SwitchCamViewButton(float x, float y, float width, float height) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
-        this.borderHeight = 0.05f;
-        this.borderWidth = 0.05f;
-        this.healthPercentage = 1.0f; // Full health by default
     }
 
-    // Method to set the health percentage (0 to 1)
-    public void setHealthPercentage(float healthPercentage) {
-        if(this.healthPercentage > 0) {
-            this.healthPercentage = healthPercentage;
-        }
-    }
-    // Method to get the health percentage (0 to 1)
-    public float getHealthPercentage() {
-        return this.healthPercentage;
-    }
-
-    // Method to draw the health bar
+    // Method to draw the cam view button
     @Override
     public void draw(GL10 gl) {
-        // Draw the health portion (red) according to healthPercentage
-        gl.glColor4f(1.0f, 0.0f, 0.0f, 1.0f); // Red color
-        drawRectangle(gl, x, y, width * healthPercentage, height);
         gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // White color
-        drawRectangle(gl, x, y+height, width, borderHeight);    // Top border
-        drawRectangle(gl, x, y-borderHeight, width, borderHeight);  // Bottom border
-        drawRectangle(gl, x, y, borderWidth, height);   // Right border
-        drawRectangle(gl, x+width-borderWidth, y, borderWidth, height); // Left border
+        drawRectangle(gl, x, y, width, height);
     }
 
     // Helper method to draw a rectangle
     private void drawRectangle(GL10 gl, float x, float y, float width, float height) {
         gl.glPushMatrix(); // Save current matrix
 
-        // Move to the position of the health bar
+        // Move to the position of the cam view button
         gl.glTranslatef(x, y, 0);
 
         // Draw a rectangle using GL_TRIANGLE_STRIP

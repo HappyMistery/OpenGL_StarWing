@@ -10,9 +10,10 @@ public class HUD implements Drawable{
 
     public HUD() {
         GUI_lmns = new ArrayList<>();
-        HealthBar healthBar;
-        healthBar = new HealthBar(-4.5f, -3.5f, 1.75f, 0.3f);
+        HealthBar healthBar = new HealthBar(-4.5f, -3.5f, 1.75f, 0.3f);
         addLmn(healthBar);
+        SwitchCamViewButton camViewButton = new SwitchCamViewButton(3.8f, 3.5f, 1.2f, 0.5f);
+        addLmn(camViewButton);
     }
 
     public void addLmn(Drawable lmn) {

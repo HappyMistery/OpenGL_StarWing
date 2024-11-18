@@ -14,6 +14,7 @@ public class MyOpenGLRenderer implements Renderer {
 	private float camX = 0.0f;
 	private float camY = 0.0f;
 	private static final float CAMERA_SMOOTHNESS = 0.1f;
+	private int cameraView = 0;
 
 	// Variables for the Back Ground image and its lightning animation
 	private BGImage bg;
@@ -27,14 +28,14 @@ public class MyOpenGLRenderer implements Renderer {
 
 	// Variables for the Arwing and its movement
 	private Object3D arwing;
-	private float arwingX = 0.0f;
-	private float arwingY = 0.0f;
-	private float arwingYaw = 0;  // Rotation angle around the Z-axis
+	private float arwingX = 0f;
+	private float arwingY = 0f;
+	private float arwingYaw = 0f;  // Rotation angle around the Z-axis
 	private float arwingRoll = 0f; // Rotation angle around the Y-axis
 	private float arwingPitch = 0f; // Rotation angle around the X-axis
-	private float targetArwingYaw = 0;
-	private float targetArwingRoll = 0;
-	private float targetArwingPitch = 0;
+	private float targetArwingYaw = 0f;
+	private float targetArwingRoll = 0f;
+	private float targetArwingPitch = 0f;
 	private static final float ROTATION_SPEED = 0.1f;
 
 	// Variables for the light in the scene
@@ -46,10 +47,10 @@ public class MyOpenGLRenderer implements Renderer {
 	private final Context context;
 
 	// Width and height of the rendering and movement area (screen)
-	private int width;
-	private int height;
-	float halfWidth;
-	float halfHeight = 4f;
+	public int width;
+	public int height;
+	public float halfWidth;
+	public float halfHeight = 4f;
 
 	public MyOpenGLRenderer(Context context){
 		this.context = context;
@@ -86,7 +87,7 @@ public class MyOpenGLRenderer implements Renderer {
 		int groundPointsXSpacing = 32;
 		int groundPointsPerRow = 11;
 		int gpX = (groundPointsXSpacing * groundPointsPerRow)/2;
-		scene = new Scene(gpX,-10f, gpZ);
+		scene = new Scene(gpX,-3f, gpZ);
 	}
 
 	// Called each frame, this draws both the 3D scene and HUD
@@ -106,17 +107,14 @@ public class MyOpenGLRenderer implements Renderer {
 		camX = Math.max(-halfWidth/2, Math.min(camX, halfWidth/2));
 		camY = Math.max(-halfHeight/2, Math.min(camY, halfHeight/2));
 
-		// Set camera position using gluLookAt (placing the camera at zCam + 5 units away)
-        // zCam is the Z-axis camera position
-        float zCam = 0;
-        GLU.gluLookAt(gl, camX, camY, 5 + zCam, camX, camY, 0f, 0f, 1f, 0f);
+        setCameraView(gl);
 
 		// Draw the background in the scene
 		gl.glPushMatrix(); // Save the current transformation matrix
 		gl.glScalef(8f, 8f, 0.0f); // Scale the image
         int angle = 0;	// Angle is used for rotating the cube
         gl.glRotatef((angle) % 360, 1, 1, 0); // Rotate the image around the X and Y axes
-		gl.glTranslatef(0f, 0.39f, -15.0f);	// Set the Back ground image to the Back ground of the scene
+		gl.glTranslatef(0f, 0.39f, -35.0f);	// Set the Back ground image to the Back ground of the scene
 
 		// Display some lighting every once in a while (randomly)
         int randomNumber = random.nextInt(100) + 1;
@@ -135,6 +133,7 @@ public class MyOpenGLRenderer implements Renderer {
 		// Draw the 3D Scene objects
 		gl.glPushMatrix(); // Save the current transformation matrix
 		gl.glScalef(0.06f, 0.06f, 0.06f);
+		gl.glRotatef(15, 1, 0, 0);
 		scene.draw(gl);
 		gl.glPopMatrix(); // Restore the transformation matrix
 
@@ -191,7 +190,7 @@ public class MyOpenGLRenderer implements Renderer {
 		gl.glLoadIdentity(); // Reset the projection matrix
 
 		// Apply perspective projection (like a 3D camera lens)
-		GLU.gluPerspective(gl, 60, (float) width / height, 0.1f, 100.f);
+		GLU.gluPerspective(gl, 60, (float) width / height, 0.1f, 200.f);
 
 		// Switch back to the model-view matrix
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
@@ -212,6 +211,15 @@ public class MyOpenGLRenderer implements Renderer {
 		// Switch back to the model-view matrix
 		gl.glMatrixMode(GL10.GL_MODELVIEW);
 		gl.glLoadIdentity(); // Reset model-view matrix
+	}
+
+	private void setCameraView(GL10 gl) {
+		if(cameraView == 0) {
+			// Set camera position using gluLookAt (placing the camera at 5 units away)
+			GLU.gluLookAt(gl, camX, camY, 5 , camX, camY, 0f, 0f, 1f, 0f);
+		} else {
+			GLU.gluLookAt(gl, 0, 0, 0 , camX, camY, 0f, 0f, 0f, 0f);
+		}
 	}
 
 	// Called when the surface dimensions change, e.g., when the screen is resized
@@ -253,13 +261,21 @@ public class MyOpenGLRenderer implements Renderer {
 	}
 
 	public void rotateArwing(int angle) {
-		targetArwingYaw = arwingYaw + angle;
+		if (targetArwingYaw == 0) {
+			targetArwingYaw = (angle > 0) ? 90 : -90;
+		} else {
+			// If already rotated, reset to 0
+			targetArwingYaw = 0;
+		}
 	}
 
 	public void stopArwingAngle() {
 		targetArwingYaw = 0;
 		targetArwingRoll = 0;
 		targetArwingPitch = 0;
+	}
 
+	public void switchCameraView() {
+		cameraView = (cameraView == 0) ? 1 : 0;
 	}
 }

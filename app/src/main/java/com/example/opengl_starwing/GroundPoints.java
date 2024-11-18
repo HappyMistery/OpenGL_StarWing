@@ -63,7 +63,6 @@ public class GroundPoints implements Drawable{
     public void draw(GL10 gl) {
         gl.glDisable(GL10.GL_LIGHTING);
         gl.glTranslatef(0, y, z);
-        //System.out.println("GPz = " + z);
         for (Cube cube : cubeList) {
             cube.draw(gl);
         }
