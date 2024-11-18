@@ -10,18 +10,22 @@ import android.opengl.GLU;
 import java.util.Random;
 
 public class MyOpenGLRenderer implements Renderer {
+	// Variables for the camera movement when Arwing moves
 	private float camX = 0.0f;
 	private float camY = 0.0f;
 	private static final float CAMERA_SMOOTHNESS = 0.1f;
 
+	// Variables for the Back Ground image and its lightning animation
 	private BGImage bg;
     private int lightTime = 0;
 	private int lightDuration = 5;
 	private boolean lightOn = false;
 	private final Random random = new Random();
 
+	// Variables for the HUD
     private HUD hud;
 
+	// Variables for the Arwing and its movement
 	private Object3D arwing;
 	private float arwingX = 0.0f;
 	private float arwingY = 0.0f;
@@ -31,23 +35,22 @@ public class MyOpenGLRenderer implements Renderer {
 	private float targetArwingYaw = 0;
 	private float targetArwingRoll = 0;
 	private float targetArwingPitch = 0;
-	private static final float MAX_ROLL_ANGLE = 10.0f; // Maximum rotation angle on Y-axis
-	private static final float ROTATION_SPEED = 0.1f; // Adjust the speed of rotation
+	private static final float ROTATION_SPEED = 0.1f;
 
+	// Variables for the light in the scene
 	private Light light;
 
+	// Variables for the 3D scene
     private Scene scene;
 
-    // Context allows access to Android resources like textures
 	private final Context context;
 
-	// Width and height of the rendering area (screen)
+	// Width and height of the rendering and movement area (screen)
 	private int width;
 	private int height;
 	float halfWidth;
 	float halfHeight = 4f;
 
-	// Constructor that initializes the context
 	public MyOpenGLRenderer(Context context){
 		this.context = context;
 	}
@@ -57,22 +60,26 @@ public class MyOpenGLRenderer implements Renderer {
 		// Set background color (black with slight transparency)
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
 
+		// Create the Background image and load its textures for the lightning animation
 		bg = new BGImage();
 		bg.loadTexture(gl, context, R.drawable.venom1);
 		bg.loadTexture(gl, context, R.drawable.venom1lightning);
 
-
-
+		// Create HUD
 		hud = new HUD();
 
+		// Load Arwing's model
 		arwing = new Object3D(context, R.raw.nau);
+		arwing.loadTexture(gl, context, R.drawable.paleta);
 
+		// Enable lightning in the scene
 		gl.glEnable(GL10.GL_LIGHTING);
 		light = new Light(gl, GL10.GL_LIGHT0);
 		light.setPosition(new float[]{0.0f, 0f, 1, 0.0f});
 		light.setAmbientColor(new float[]{0.6f, 0.6f, 0.6f});
 		light.setDiffuseColor(new float[]{1, 1, 1});
 
+		// Create the 3D scene with its moving ground points
 		int groundPointsYSpacing = 8;
 		int groundPointsPerCol = 21;
 		int gpZ = (groundPointsYSpacing * groundPointsPerCol)/2;
@@ -85,18 +92,17 @@ public class MyOpenGLRenderer implements Renderer {
 	// Called each frame, this draws both the 3D scene and HUD
 	@Override
 	public void onDrawFrame(GL10 gl) {
-		// Draw the 3D scene
 		setPerspectiveProjection(gl); // Switch to perspective view
 
 		// Clear the screen (color and depth buffer)
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
+		// Set the general light's position
 		light.setPosition(new float[]{0, 2f, -2, 0});
 
-		// Smoothly move the camera towards the Arwing's position
+		// Smoothly move the camera towards the Arwing's position, all within a certain range
 		camX += ((arwingX - camX) * CAMERA_SMOOTHNESS)/2;
 		camY += ((arwingY - camY) * CAMERA_SMOOTHNESS)/2;
-
 		camX = Math.max(-halfWidth/2, Math.min(camX, halfWidth/2));
 		camY = Math.max(-halfHeight/2, Math.min(camY, halfHeight/2));
 
@@ -108,14 +114,13 @@ public class MyOpenGLRenderer implements Renderer {
 		// Draw the background in the scene
 		gl.glPushMatrix(); // Save the current transformation matrix
 		gl.glScalef(8f, 8f, 0.0f); // Scale the image
-        // Angle is used for rotating the cube
-        int angle = 0;
+        int angle = 0;	// Angle is used for rotating the cube
         gl.glRotatef((angle) % 360, 1, 1, 0); // Rotate the image around the X and Y axes
-		gl.glTranslatef(0f, 0.39f, -15.0f);
+		gl.glTranslatef(0f, 0.39f, -15.0f);	// Set the Back ground image to the Back ground of the scene
 
-		// Display some lighting every once in a while
+		// Display some lighting every once in a while (randomly)
         int randomNumber = random.nextInt(100) + 1;
-        int lightningNum = 10;
+        int lightningNum = 10;	// Number to display lightning
         if(randomNumber != lightningNum && !lightOn) {
 			bg.drawImage(gl, 0);
 		} else {
@@ -127,9 +132,9 @@ public class MyOpenGLRenderer implements Renderer {
 		}
 		gl.glPopMatrix(); // Restore the transformation matrix
 
+		// Draw the 3D Scene objects
 		gl.glPushMatrix(); // Save the current transformation matrix
 		gl.glScalef(0.06f, 0.06f, 0.06f);
-		//gl.glRotatef(25, 1, 0, 0);
 		scene.draw(gl);
 		gl.glPopMatrix(); // Restore the transformation matrix
 
@@ -153,6 +158,7 @@ public class MyOpenGLRenderer implements Renderer {
 		arwing.draw(gl);
 		gl.glPopMatrix(); // Restore the transformation matrix
 
+		// Restore Background after lightning
 		if(lightOn) {
 			lightTime++;
 			if(lightTime == lightDuration) {

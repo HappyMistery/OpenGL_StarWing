@@ -1,6 +1,6 @@
 # Blender 4.2.1 LTS
 # www.blender.org
-mtllib nau.mtl
+mtllib naum.mtl
 o nau
 v -0.546632 0.008368 0.896531
 v -0.473886 0.019248 0.537066
