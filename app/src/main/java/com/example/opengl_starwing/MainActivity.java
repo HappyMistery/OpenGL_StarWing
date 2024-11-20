@@ -7,7 +7,7 @@ import android.os.Handler;
 import android.view.MotionEvent;
 
 public class MainActivity extends Activity {
-    private static final float MOVEMENT_SPEED = 0.025f;
+    private static final float MOVEMENT_SPEED = 0.05f;
     private static final float DIAGONAL_TOLERANCE = 100f; // Tolerance (in pixels) for diagonal movement
     private static final float SWIPE_THRESHOLD_DISTANCE = 200f; // Minimum distance for a swipe
     private static final long SWIPE_THRESHOLD_TIME = 200; // Maximum time (ms) to be considered a fast swipe

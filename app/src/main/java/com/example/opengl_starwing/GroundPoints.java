@@ -62,7 +62,7 @@ public class GroundPoints implements Drawable{
     @Override
     public void draw(GL10 gl) {
         gl.glDisable(GL10.GL_LIGHTING);
-        gl.glTranslatef(0, y, z);
+        gl.glTranslatef(x, y, z);
         for (Cube cube : cubeList) {
             cube.draw(gl);
         }

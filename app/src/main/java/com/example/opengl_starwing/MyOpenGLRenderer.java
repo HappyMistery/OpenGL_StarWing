@@ -13,8 +13,10 @@ public class MyOpenGLRenderer implements Renderer {
 	// Variables for the camera movement when Arwing moves
 	private float camX = 0.0f;
 	private float camY = 0.0f;
+	private float camZ = 20.0f;
 	private static final float CAMERA_SMOOTHNESS = 0.1f;
 	private int cameraView = 0;
+	private static final int CAMERA_ANGLES = 3;
 
 	// Variables for the Back Ground image and its lightning animation
 	private BGImage bg;
@@ -76,18 +78,18 @@ public class MyOpenGLRenderer implements Renderer {
 		// Enable lightning in the scene
 		gl.glEnable(GL10.GL_LIGHTING);
 		light = new Light(gl, GL10.GL_LIGHT0);
-		light.setPosition(new float[]{0.0f, 0f, 1, 0.0f});
-		light.setAmbientColor(new float[]{0.6f, 0.6f, 0.6f});
+		light.setPosition(new float[]{0.0f, 1f, 1, 0.0f});
+		light.setAmbientColor(new float[]{1f, 1f, 1f});
 		light.setDiffuseColor(new float[]{1, 1, 1});
 
 		// Create the 3D scene with its moving ground points
-		int groundPointsYSpacing = 8;
-		int groundPointsPerCol = 21;
+		int groundPointsYSpacing = 12;
+		int groundPointsPerCol = 84;
 		int gpZ = (groundPointsYSpacing * groundPointsPerCol)/2;
-		int groundPointsXSpacing = 32;
-		int groundPointsPerRow = 11;
+		int groundPointsXSpacing = 42;
+		int groundPointsPerRow = 19;
 		int gpX = (groundPointsXSpacing * groundPointsPerRow)/2;
-		scene = new Scene(gpX,-3f, gpZ);
+		scene = new Scene(gpX,-10f, gpZ);
 	}
 
 	// Called each frame, this draws both the 3D scene and HUD
@@ -111,10 +113,10 @@ public class MyOpenGLRenderer implements Renderer {
 
 		// Draw the background in the scene
 		gl.glPushMatrix(); // Save the current transformation matrix
-		gl.glScalef(8f, 8f, 0.0f); // Scale the image
+		gl.glScalef(35f, 35f, 0.0f); // Scale the image
         int angle = 0;	// Angle is used for rotating the cube
         gl.glRotatef((angle) % 360, 1, 1, 0); // Rotate the image around the X and Y axes
-		gl.glTranslatef(0f, 0.39f, -35.0f);	// Set the Back ground image to the Back ground of the scene
+		gl.glTranslatef(0f, 0.4f, 0.0f);	// Set the Back ground image to the Back ground of the scene
 
 		// Display some lighting every once in a while (randomly)
         int randomNumber = random.nextInt(100) + 1;
@@ -133,14 +135,13 @@ public class MyOpenGLRenderer implements Renderer {
 		// Draw the 3D Scene objects
 		gl.glPushMatrix(); // Save the current transformation matrix
 		gl.glScalef(0.06f, 0.06f, 0.06f);
-		gl.glRotatef(15, 1, 0, 0);
 		scene.draw(gl);
 		gl.glPopMatrix(); // Restore the transformation matrix
 
 		// Draw the Arwing
 		gl.glPushMatrix(); // Save the current transformation matrix
 		gl.glScalef(1f, 1.0f, 1.0f); // Scale the Arwing
-		gl.glTranslatef(arwingX, arwingY, 3.0f);
+		gl.glTranslatef(arwingX, arwingY, camZ-2f);
 		gl.glRotatef((arwingYaw) % 360, 0, 0, 1); // Tilt the arwing
 		gl.glRotatef(arwingRoll, 0, 1, 0); // Roll the arwing
 		gl.glRotatef(arwingPitch, 1, 0, 0); // Pitch the arwing
@@ -214,11 +215,13 @@ public class MyOpenGLRenderer implements Renderer {
 	}
 
 	private void setCameraView(GL10 gl) {
-		if(cameraView == 0) {
+		if (cameraView == 0) {	// Normal camera view
 			// Set camera position using gluLookAt (placing the camera at 5 units away)
-			GLU.gluLookAt(gl, camX, camY, 5 , camX, camY, 0f, 0f, 1f, 0f);
-		} else {
-			GLU.gluLookAt(gl, 0, 0, 0 , camX, camY, 0f, 0f, 0f, 0f);
+			GLU.gluLookAt(gl, camX, camY, camZ , camX, camY, 0f, 0f, 1f, 0f);
+		} else if (cameraView == 1) {	// Top camera view
+			GLU.gluLookAt(gl, 0, 9f, camZ+5, 0, 0, camZ-10, 0f, 0f, -1f);
+		} else {	// Side camera view
+			GLU.gluLookAt(gl, 18f, 5f, 10f, 0f, 0, 10f, 0f, 1f, 0f);
 		}
 	}
 
@@ -276,6 +279,6 @@ public class MyOpenGLRenderer implements Renderer {
 	}
 
 	public void switchCameraView() {
-		cameraView = (cameraView == 0) ? 1 : 0;
+		cameraView = (cameraView+1)%CAMERA_ANGLES;
 	}
 }

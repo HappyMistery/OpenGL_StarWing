@@ -76,7 +76,7 @@ public class BGImage implements Drawable{
 
         // front
         gl.glPushMatrix();
-        gl.glTranslatef(0.0f, 0.0f, 1.0f);
+        gl.glTranslatef(0.0f, 0.0f, 50.0f);
         gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
         gl.glPopMatrix();
 
