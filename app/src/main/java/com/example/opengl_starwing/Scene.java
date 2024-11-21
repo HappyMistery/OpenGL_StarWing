@@ -43,14 +43,16 @@ public class Scene {
 
     public void draw(GL10 gl) {
         z+=speed;
+        float offset;
         gl.glPushMatrix();
         gl.glTranslatef(x, y, z);
         for (Drawable lmn : dyObjs) {
             if (lmn instanceof GroundPoints) {
                 GroundPoints gp = (GroundPoints) lmn;
                 // Check if the z position crosses the threshold
-                reset = (z < 0) ? (resetThreshold+1+(z%initialZ)) : z%initialZ;
-                if (reset >= resetThreshold) {
+                reset = (z < 0) ? (resetThreshold+speed+(z%initialZ)) : (z%initialZ);
+                offset = (speed > 1 && reset%2 == 0) ? 1 : 0;   // Offset introduced so that change in speed doesn't affect modulo operation
+                if (reset >= resetThreshold+offset) {
                     prevZ = (z < 0) ? prevZ+initialZ/9 : prevZ+initialZ;
                     gp.setPosition(0, y, prevZ); // Reset to its initial z position
                 }
