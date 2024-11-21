@@ -50,14 +50,14 @@ public class MainActivity extends Activity {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 // Check if user touches to switch camera view
-                if (x > myGLRenderer.width/8*7 && y < myGLRenderer.height/12) {
+                if (x > myGLRenderer.width / 8 * 7 && y < myGLRenderer.height / 12) {
                     myGLRenderer.switchCameraView();
                 }
-
-                // Additional region checks can be added here
-                // For example, you can create quadrants:
-                // if (x < screenWidth / 2 && y < screenHeight / 2) { ... }
-                // if (x >= screenWidth / 2 && y < screenHeight / 2) { ... }
+                // Check if the touch is in the bottom-right part of the screen for boosting
+                if (x > myGLRenderer.width / 4 * 3 && y > myGLRenderer.height / 8 * 7) {
+                    myGLRenderer.boost();
+                    return true;
+                }
 
                 isMoving = false; // Stop any previous movement
                 initialX = event.getX();

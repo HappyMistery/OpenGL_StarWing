@@ -6,7 +6,7 @@ import java.util.List;
 import javax.microedition.khronos.opengles.GL10;
 
 public class Scene {
-    private static final float SPEED = 1f;
+    private float speed = 1f;
     private float reset;
     private List<Drawable> dyObjs;
     private List<Drawable> stObjs;
@@ -34,11 +34,15 @@ public class Scene {
 
         GroundPoints gp1 = new GroundPoints(groundPointsPerCol, groundPointsPerRow, groundPointsXSpacing, groundPointsYSpacing);
         gp1.setPosition(0, y, -z/3);
-        dyObjs.add(gp1);
+        addDyLmn(gp1);
+    }
+
+    public void addDyLmn(Drawable lmn) {
+        dyObjs.add(lmn);
     }
 
     public void draw(GL10 gl) {
-        z+=SPEED;
+        z+=speed;
         gl.glPushMatrix();
         gl.glTranslatef(x, y, z);
         for (Drawable lmn : dyObjs) {
@@ -54,5 +58,9 @@ public class Scene {
             lmn.draw(gl);  // Calls the draw method of each element
         }
         gl.glPopMatrix();
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
     }
 }
