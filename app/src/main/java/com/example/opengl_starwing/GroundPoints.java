@@ -22,8 +22,7 @@ public class GroundPoints implements Drawable{
         createCubeMatrix();
     }
 
-    public void setPosition(float x, float y, float z)
-    {
+    public void setPosition(float x, float y, float z) {
         this.x = x;
         this.y = y;
         this.z = z;

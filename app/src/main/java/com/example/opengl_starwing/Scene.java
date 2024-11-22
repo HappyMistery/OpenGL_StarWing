@@ -2,6 +2,7 @@ package com.example.opengl_starwing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -11,6 +12,7 @@ public class Scene {
     private List<Drawable> stObjs;
     private final float x, y, initialZ;
     private float z, prevZ;
+    private final Random random = new Random();
 
     int groundPointsYSpacing = 12;
     int groundPointsPerCol = 84;
@@ -38,6 +40,7 @@ public class Scene {
     }
 
     public void draw(GL10 gl) {
+        spawnBuilding();
         z+=speed;
         float offset;
         gl.glPushMatrix();
@@ -55,9 +58,25 @@ public class Scene {
                     gp.setPosition(0, y, prevZ); // Reset to its initial z position
                 }
             }
+            else if (lmn instanceof Building) {
+                gl.glScalef(1f, 2f, 1f);
+            }
             lmn.draw(gl);  // Calls the draw method of each element
         }
         gl.glPopMatrix();
+    }
+
+    private void spawnBuilding() {
+        // Spawn some building every once in a while (randomly)
+        int randomNumber = random.nextInt(75) + 1;
+        int spawningNum = 10;	// Number to spawn building
+        if(randomNumber == spawningNum) {
+            System.out.println("spawned a building");
+            // Randomize the position of the cube
+            float randomX = random.nextFloat() * 10 - 1; // Range: -1 to 1
+            Building newBuilding = new Building(randomX, 0.0f, 0.0f);
+            addDyLmn(newBuilding);
+        }
     }
 
     public void setSpeed(float speed) {

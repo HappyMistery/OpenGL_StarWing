@@ -28,7 +28,7 @@ public class BackGround {
             lightTime++;
             if(lightTime == lightDuration) {
                 lightTime = 0;
-                lightDuration = random.nextInt(13) + 3;
+                lightDuration = random.nextInt(14) + 3;
                 lightOn = false;
 
                 light.setPosition(new float[]{0.0f, 0f, 1, 0.0f});
