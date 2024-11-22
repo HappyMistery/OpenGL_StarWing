@@ -51,8 +51,10 @@ public class Scene {
                 GroundPoints gp = (GroundPoints) lmn;
                 // Check if the z position crosses the threshold
                 reset = (z < 0) ? (resetThreshold+speed+(z%initialZ)) : (z%initialZ);
-                offset = (speed > 1 && reset%2 == 0) ? 1 : 0;   // Offset introduced so that change in speed doesn't affect modulo operation
-                if (reset >= resetThreshold+offset) {
+                offset = (speed > 1 && reset%2 == 0) ? 1 : 0;
+                if(reset < 5f || reset > 497f) System.out.println("reset: " + reset + "   offset: " + offset + "resetThreshold: " + resetThreshold + "   speed: " + speed + "");
+                if (reset >= resetThreshold-offset) {
+                    System.out.println("offset: " + offset);
                     prevZ = (z < 0) ? prevZ+initialZ/9 : prevZ+initialZ;
                     gp.setPosition(0, y, prevZ); // Reset to its initial z position
                 }
