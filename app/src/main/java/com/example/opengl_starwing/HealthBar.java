@@ -3,7 +3,11 @@ package com.example.opengl_starwing;
 import javax.microedition.khronos.opengles.GL10;
 
 public class HealthBar implements Drawable {
-    private float x, y, width, height, borderHeight, borderWidth; // Position and size of the health bar
+    private final float x, y;
+    private float width;
+    private float height;
+    private float borderHeight;
+    private float borderWidth; // Position and size of the health bar
     private float healthPercentage;    // Health percentage (0 to 1)
 
     public HealthBar(float x, float y, float width, float height) {

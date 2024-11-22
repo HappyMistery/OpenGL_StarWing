@@ -5,8 +5,9 @@ import java.util.List;
 
 import javax.microedition.khronos.opengles.GL10;
 
-public class HUD implements Drawable{
-    private List<Drawable> GUI_lmns;
+public class HUD {
+    private final List<Drawable> GUI_lmns;
+    private boolean boostActive = false;
 
     public HUD() {
         GUI_lmns = new ArrayList<>();
@@ -22,10 +23,21 @@ public class HUD implements Drawable{
         GUI_lmns.add(lmn);
     }
 
-    public void draw(GL10 gl) {
+    public void draw(GL10 gl, Arwing arwing, Scene scene) {
         gl.glDisable(GL10.GL_LIGHTING);
         for (Drawable lmn : GUI_lmns) {
             lmn.draw(gl);  // Calls the draw method of each element
+        }
+
+        if (boostActive) {
+            useBoost();
+        } else {
+            stopBoost();
+        }
+
+        if (boostActive && getBoostPercentage() <= 0.01) {
+            stopBoost();
+            boost(arwing, scene);
         }
         gl.glEnable(GL10.GL_LIGHTING);
     }
@@ -53,5 +65,17 @@ public class HUD implements Drawable{
             }
         }
         return 0.0f;
+    }
+
+    public void boost(Arwing arwing, Scene scene) {
+        if (!boostActive) {
+            arwing.setTargetArwingZ(-1); // Lower target Z for boost
+            boostActive = true;
+            scene.setSpeed(2);
+        } else {
+            arwing.setTargetArwingZ(1); // Lower target Z for boost
+            boostActive = false;
+            scene.setSpeed(1);
+        }
     }
 }

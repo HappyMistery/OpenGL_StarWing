@@ -7,48 +7,13 @@ import android.content.Context;
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
 
-import java.util.Random;
-
 public class MyOpenGLRenderer implements Renderer {
-	// Variables for the camera movement when Arwing moves
-	private float camX = 0.0f;
-	private float camY = 0.0f;
-	private float camZ = 20.0f;
-	private static final float CAMERA_SMOOTHNESS = 0.1f;
-	private int cameraView = 0;
-	private static final int CAMERA_ANGLES = 3;
-
-	// Variables for the Back Ground image and its lightning animation
-	private BGImage bg;
-    private int lightTime = 0;
-	private int lightDuration = 5;
-	private boolean lightOn = false;
-	private final Random random = new Random();
-
-	// Variables for the HUD
+	private Camera camera;
+	private BackGround bg;
     private HUD hud;
-
-	// Variables for the Arwing and its movement
-	private Object3D arwing, arwingShadow;
-	private float arwingX = 0f;
-	private float arwingY = 0f;
-	private float arwingZ = camZ-2.35f;
-	private float arwingYaw = 0f;  // Rotation angle around the Z-axis
-	private float arwingRoll = 0f; // Rotation angle around the Y-axis
-	private float arwingPitch = 0f; // Rotation angle around the X-axis
-	private float targetArwingYaw = 0f;
-	private float targetArwingRoll = 0f;
-	private float targetArwingPitch = 0f;
-	private static final float ROTATION_SPEED = 0.1f;
-	private boolean boostActive = false;
-	private float targetArwingZ = camZ - 2.35f; // Target Z position for the Arwing
-	private static final float Z_TRANSITION_SPEED = 0.1f; // Speed of Z transition
-
-	// Variables for the light in the scene
 	private Light light;
-
-	// Variables for the 3D scene
-    private Scene scene;
+	private Scene scene;
+	private Arwing arwing;
 
 	private final Context context;
 
@@ -67,18 +32,10 @@ public class MyOpenGLRenderer implements Renderer {
 		// Set background color (black with slight transparency)
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
 
-		// Create the Background image and load its textures for the lightning animation
-		bg = new BGImage();
-		bg.loadTexture(gl, context, R.drawable.venom1);
-		bg.loadTexture(gl, context, R.drawable.venom1lightning);
-
-		// Create HUD
+		camera = new Camera();
+		arwing = new Arwing(gl, context, camera.getCamZ());
+		bg = new BackGround(gl, context);
 		hud = new HUD();
-
-		// Load Arwing's model
-		arwing = new Object3D(context, R.raw.nau);
-		arwingShadow = new Object3D(context, R.raw.nau);
-		arwing.loadTexture(gl, context, R.drawable.paleta);
 
 		// Enable lightning in the scene
 		gl.glEnable(GL10.GL_LIGHTING);
@@ -108,31 +65,23 @@ public class MyOpenGLRenderer implements Renderer {
 		// Set the general light's position
 		light.setPosition(new float[]{0, 2f, -2, 0});
 
-        setCameraView(gl);
-
-		drawBackGround(gl);
-
+        camera.setCameraView(gl, arwing.getArwingX(), arwing.getArwingY(), halfWidth, halfHeight);
+		bg.draw(gl, light);
 		drawScene(gl);
-
-		drawArwing(gl);
-
-		// Restore Background after lightning
-		if(lightOn) {
-			lightTime++;
-			if(lightTime == lightDuration) {
-				lightTime = 0;
-				lightDuration = random.nextInt(13) + 3;
-				lightOn = false;
-
-				light.setPosition(new float[]{0.0f, 0f, 1, 0.0f});
-				light.setAmbientColor(new float[]{0.6f, 0.6f, 0.6f});
-			}
-		}
+		arwing.draw(gl, halfHeight);
+		bg.restoreBG(light);	// Disable Lightning after a certain time
 
 		// Switch to 2D mode (HUD) and draw the HUD
 		setOrthographicProjection(gl);
+		hud.draw(gl, arwing, scene);
+	}
 
-		drawHUD(gl);
+	private void drawScene(GL10 gl) {
+		// Draw the 3D Scene objects
+		gl.glPushMatrix(); // Save the current transformation matrix
+		gl.glScalef(0.06f, 0.06f, 0.06f);
+		scene.draw(gl);
+		gl.glPopMatrix(); // Restore the transformation matrix
 	}
 
 	// Set up perspective projection for 3D rendering
@@ -173,110 +122,6 @@ public class MyOpenGLRenderer implements Renderer {
 		gl.glLoadIdentity(); // Reset model-view matrix
 	}
 
-	private void setCameraView(GL10 gl) {
-		// Smoothly move the camera towards the Arwing's position, all within a certain range
-		camX += ((arwingX - camX) * CAMERA_SMOOTHNESS)/2;
-		camY += ((arwingY - camY) * CAMERA_SMOOTHNESS)/2;
-		camX = Math.max(-halfWidth/2, Math.min(camX, halfWidth/2));
-		camY = Math.max(-halfHeight/2, Math.min(camY, halfHeight/2));
-		if (cameraView == 0) {	// Normal camera view
-			// Set camera position using gluLookAt (placing the camera at 5 units away)
-			GLU.gluLookAt(gl, camX, camY, camZ , camX, camY, 0f, 0f, 1f, 0f);
-		} else if (cameraView == 1) {	// Top camera view
-			GLU.gluLookAt(gl, 0, 9f, camZ+5, 0, 0, camZ-10, 0f, 0f, -1f);
-		} else {	// Side camera view
-			GLU.gluLookAt(gl, 18f, 5f, 10f, 0f, 0, 10f, 0f, 1f, 0f);
-		}
-	}
-
-	private void drawBackGround(GL10 gl) {
-		// Draw the background in the scene
-		gl.glPushMatrix(); // Save the current transformation matrix
-		gl.glScalef(35f, 35f, 0.0f); // Scale the image
-		int angle = 0;	// Angle is used for rotating the cube
-		gl.glRotatef((angle) % 360, 1, 1, 0); // Rotate the image around the X and Y axes
-		gl.glTranslatef(0f, 0.4f, 0.0f);	// Set the Back ground image to the Back ground of the scene
-
-		// Display some lighting every once in a while (randomly)
-		int randomNumber = random.nextInt(100) + 1;
-		int lightningNum = 10;	// Number to display lightning
-		if(randomNumber != lightningNum && !lightOn) {
-			bg.drawImage(gl, 0);
-		} else {
-			bg.drawImage(gl, 1);
-			lightOn = true;
-
-			light.setPosition(new float[]{0.0f, 1f, 0, 0.0f});
-			light.setAmbientColor(new float[]{0.4f, 0.4f, 0.6f});
-		}
-		gl.glPopMatrix(); // Restore the transformation matrix
-	}
-
-	private void drawScene(GL10 gl) {
-		// Draw the 3D Scene objects
-		gl.glPushMatrix(); // Save the current transformation matrix
-		gl.glScalef(0.06f, 0.06f, 0.06f);
-		scene.draw(gl);
-		gl.glPopMatrix(); // Restore the transformation matrix
-	}
-
-	private void drawArwing(GL10 gl) {
-		// Smoothly transition the Arwing's z position
-		if (Math.abs(targetArwingZ - arwingZ) > 0.01f) {
-			arwingZ += (targetArwingZ - arwingZ) * Z_TRANSITION_SPEED;
-		}
-		// Draw the Arwing
-		gl.glPushMatrix(); // Save the current transformation matrix
-		gl.glScalef(1.0f, 1.0f, 1.0f); // Scale the Arwing
-		gl.glTranslatef(arwingX, arwingY, arwingZ);
-		gl.glRotatef((arwingYaw) % 360, 0, 0, 1); // Tilt the arwing
-		gl.glRotatef(arwingRoll, 0, 1, 0); // Roll the arwing
-		gl.glRotatef(arwingPitch, 1, 0, 0); // Pitch the arwing
-		// Gradually rotate the Arwing towards the target angle
-		if (Math.abs(targetArwingYaw - arwingYaw) > 0.01f) {
-			arwingYaw += (targetArwingYaw - arwingYaw) * ROTATION_SPEED;
-		}
-		if (Math.abs(targetArwingRoll - arwingRoll) > 0.01f) {
-			arwingRoll += (targetArwingRoll - arwingRoll) * ROTATION_SPEED;
-		}
-		if (Math.abs(targetArwingPitch - arwingPitch) > 0.01f) {
-			arwingPitch += (targetArwingPitch - arwingPitch) * ROTATION_SPEED;
-		}
-		arwing.draw(gl);
-		gl.glPopMatrix(); // Restore the transformation matrix
-
-		float normalizedY = (arwingY - (-halfHeight)) / (halfHeight - (-halfHeight));
-		normalizedY = Math.min(1.0f, Math.max(0.0f, normalizedY)); // Ensure clamping between 0 and 1
-
-		// Use the normalizedY to calculate shadowScale
-		float shadowScale = Math.min(0.9f, Math.max(0.3f, 1.0f - normalizedY * 0.9f));
-
-		gl.glPushMatrix(); // Save the current transformation matrix
-		gl.glTranslatef(arwingX, -1.25f, arwingZ+0.1f);
-		gl.glScalef(shadowScale, shadowScale, shadowScale); // Scale the Arwing shadow
-		gl.glRotatef(-arwingYaw, 0, 0, 1); // Tilt the arwing shadow
-		gl.glRotatef(180+arwingRoll, 0, 1, 0); // Roll the arwing shadow
-		gl.glRotatef(195-Math.min(arwingPitch, 3), 1, 0, 0); // Pitch the arwing shadow
-		gl.glDisable(GL10.GL_LIGHTING);
-		arwingShadow.draw(gl);
-		gl.glEnable(GL10.GL_LIGHTING);
-		gl.glPopMatrix(); // Restore the transformation matrix
-	}
-
-	private void drawHUD(GL10 gl) {
-		hud.draw(gl);
-		if (boostActive) {
-			hud.useBoost();
-		} else {
-			hud.stopBoost();
-		}
-
-		if (boostActive && hud.getBoostPercentage() <= 0.01) {
-			hud.stopBoost();
-			boost();
-		}
-	}
-
 	// Called when the surface dimensions change, e.g., when the screen is resized
 	@Override
 	public void onSurfaceChanged(GL10 gl, int width, int height) {
@@ -291,58 +136,22 @@ public class MyOpenGLRenderer implements Renderer {
 	}
 
 	public void moveArwing(float deltaX, float deltaY) {
-		// Clamp the Arwing's position to keep it within the viewport
-		arwingX = Math.max(-halfWidth, Math.min(arwingX+=deltaX, halfWidth));
-		arwingY = Math.max(-halfHeight, Math.min(arwingY+=deltaY, halfHeight+0.3f));
-		float rotationAngle = 15;
-		if (deltaX > 0) {
-			targetArwingYaw = -rotationAngle; // Tilt right when moving right
-			targetArwingRoll = -rotationAngle*2; // Rotate right on Y-axis
-		} else if (deltaX < 0) {
-			targetArwingYaw = rotationAngle; // Tilt left when moving left
-			targetArwingRoll = rotationAngle*2; // Rotate left on Y-axis
-		} else {
-			targetArwingYaw = 0; // No tilt when not moving horizontally
-			targetArwingRoll = 0; // No rotation on Y-axis when not moving horizontally
-		}
-
-		if (deltaY > 0) {
-			targetArwingPitch = rotationAngle*3;
-		} else if (deltaY < 0) {
-			targetArwingPitch = -rotationAngle/2;
-		} else {
-			targetArwingPitch = 0;
-		}
+		arwing.move(deltaX, deltaY, halfWidth, halfHeight);
 	}
 
-	public void rotateArwing(int angle) {
-		if (targetArwingYaw == 0) {
-			targetArwingYaw = (angle > 0) ? 90 : -90;
-		} else {
-			// If already rotated, reset to 0
-			targetArwingYaw = 0;
-		}
+	public void stopArwingAngle(){
+		arwing.resetAngle();
 	}
 
-	public void stopArwingAngle() {
-		targetArwingYaw = 0;
-		targetArwingRoll = 0;
-		targetArwingPitch = 0;
+	public void rotateArwing(int angle){
+		arwing.rotate(angle);
 	}
 
 	public void switchCameraView() {
-		cameraView = (cameraView+1)%CAMERA_ANGLES;
+		camera.switchPOV();
 	}
 
 	public void boost() {
-		if (!boostActive) {
-			targetArwingZ -= 1f; // Lower target Z for boost
-			boostActive = true;
-			scene.setSpeed(2);
-		} else {
-			targetArwingZ += 1f; // Lower target Z for boost
-			boostActive = false;
-			scene.setSpeed(1);
-		}
+		hud.boost(arwing, scene);
 	}
 }

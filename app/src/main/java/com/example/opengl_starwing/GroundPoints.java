@@ -7,14 +7,10 @@ import java.util.List;
 import javax.microedition.khronos.opengles.GL10;
 
 public class GroundPoints implements Drawable{
-    private List<Cube> cubeList;
-    private float x;
-    private float y;
-    private float z;
-    private int rows;
-    private int cols;
-    private float cubeXSpacing;
-    private float cubeYSpacing;
+    private final List<Cube> cubeList;
+    private float x, y, z;
+    private final int rows, cols;
+    private final float cubeXSpacing, cubeYSpacing;
 
     // Constructor
     public GroundPoints(int rows, int cols, float cubeXSpacing, float cubeYSpacing) {
@@ -31,18 +27,6 @@ public class GroundPoints implements Drawable{
         this.x = x;
         this.y = y;
         this.z = z;
-    }
-
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
-    }
-
-    public float getZ() {
-        return z;
     }
 
     // Method to create a matrix of cubes

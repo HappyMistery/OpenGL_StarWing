@@ -84,9 +84,9 @@ public class Object3D {
                         ftmp = tmp[i].split("/");
 
                         vindex.add(Integer.parseInt(ftmp[0]) - 1);
-                        if (tlist.size()>0)
+                        if (!tlist.isEmpty())
                             tindex.add(Integer.parseInt(ftmp[1]) - 1);
-                        if (nlist.size()>0)
+                        if (!nlist.isEmpty())
                             nindex.add(Integer.parseInt(ftmp[2]) - 1);
 
                         numFaceIndexs++;
@@ -106,7 +106,7 @@ public class Object3D {
             vertexBuffer.position(0);
 
 
-            if (tindex.size()>0)  {
+            if (!tindex.isEmpty())  {
                 ByteBuffer vtbb = ByteBuffer.allocateDirect(tindex.size() * 4 * 2);
                 vtbb.order(ByteOrder.nativeOrder());
                 texcoordBuffer = vtbb.asFloatBuffer();
@@ -118,7 +118,7 @@ public class Object3D {
                 texcoordBuffer.position(0);
             }
 
-            if(nindex.size()>0) {
+            if(!nindex.isEmpty()) {
                 ByteBuffer nbb = ByteBuffer.allocateDirect(nindex.size() * 4 * 3);
                 nbb.order(ByteOrder.nativeOrder());
                 normalBuffer = nbb.asFloatBuffer();
@@ -213,7 +213,7 @@ public class Object3D {
         } finally {
             try {
                 istream.close();
-            } catch(IOException e) { }
+            } catch(IOException ignored) { }
         }
 
         // Build Texture from loaded bitmap for the currently-bind texture ID

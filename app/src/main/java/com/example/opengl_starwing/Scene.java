@@ -7,20 +7,16 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class Scene {
     private float speed = 1f;
-    private float reset;
     private List<Drawable> dyObjs;
     private List<Drawable> stObjs;
-    private float x;
-    private float y;
-    private float z;
-    private float initialZ;
-    private float prevZ;
+    private final float x, y, initialZ;
+    private float z, prevZ;
 
     int groundPointsYSpacing = 12;
     int groundPointsPerCol = 84;
     int groundPointsXSpacing = 42;
     int groundPointsPerRow = 20;
-    private float resetThreshold; // Set a threshold for when to reset the Ground Points
+    private final float resetThreshold; // Set a threshold for when to reset the Ground Points
 
     public Scene(float x, float y, float z) {
         dyObjs = new ArrayList<Drawable>(32);
@@ -50,8 +46,8 @@ public class Scene {
             if (lmn instanceof GroundPoints) {
                 GroundPoints gp = (GroundPoints) lmn;
                 // Check if the z position crosses the threshold
-                reset = (z < 0) ? (resetThreshold+speed+(z%initialZ)) : (z%initialZ);
-                offset = (speed > 1 && reset%2 == 0) ? 1 : 0;
+                float reset = (z < 0) ? (resetThreshold + speed + (z % initialZ)) : (z % initialZ);
+                offset = (speed > 1 && reset %2 == 0) ? 1 : 0;
                 if(reset < 5f || reset > 497f) System.out.println("reset: " + reset + "   offset: " + offset + "resetThreshold: " + resetThreshold + "   speed: " + speed + "");
                 if (reset >= resetThreshold-offset) {
                     System.out.println("offset: " + offset);
