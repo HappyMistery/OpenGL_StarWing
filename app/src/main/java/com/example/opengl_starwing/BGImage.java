@@ -57,6 +57,11 @@ public class BGImage implements Drawable{
     public void draw(GL10 gl) {
     }
 
+    @Override
+    public float getZ() {
+        return 0;
+    }
+
     // Draw the shape
     //@Override
     public void drawImage(GL10 gl, int texID) {

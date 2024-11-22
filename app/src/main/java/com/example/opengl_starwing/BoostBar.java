@@ -44,6 +44,11 @@ public class BoostBar implements Drawable {
         drawRectangle(gl, x+width-borderWidth, y, borderWidth, height); // Left border
     }
 
+    @Override
+    public float getZ() {
+        return 0;
+    }
+
     // Helper method to draw a rectangle
     private void drawRectangle(GL10 gl, float x, float y, float width, float height) {
         gl.glPushMatrix(); // Save current matrix

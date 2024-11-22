@@ -80,4 +80,9 @@ public class Cube implements Drawable {
 
         gl.glPopMatrix(); // Restore the previous state
     }
+
+    @Override
+    public float getZ() {
+        return z;
+    }
 }

@@ -21,9 +21,14 @@ public class Building implements Drawable{
 
     public void draw(GL10 gl) {
         gl.glPushMatrix();
-        gl.glScalef(1.5f, 3f, 1.5f);
+        gl.glScalef(30f, 75f, 30f);
         gl.glTranslatef(x, y, z);
         building.draw(gl);
         gl.glPopMatrix();
+    }
+
+    @Override
+    public float getZ() {
+        return z;
     }
 }

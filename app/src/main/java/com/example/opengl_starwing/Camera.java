@@ -33,7 +33,8 @@ public class Camera {
         } else if (cameraView == 1) {	// Top camera view
             GLU.gluLookAt(gl, 0, 9f, camZ+5, 0, 0, camZ-10, 0f, 0f, -1f);
         } else {	// Side camera view
-            GLU.gluLookAt(gl, 18f, 5f, 10f, 0f, 0, 10f, 0f, 1f, 0f);
+            //GLU.gluLookAt(gl, 18f, 5f, 10f, 0f, 0, 10f, 0f, 1f, 0f);
+            GLU.gluLookAt(gl, 35.5f, 4f, 0.01f, 0f, 0, 2f, 0f, 1f, 0f);
         }
     }
 
