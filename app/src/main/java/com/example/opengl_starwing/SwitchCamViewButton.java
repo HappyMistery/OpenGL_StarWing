@@ -10,13 +10,18 @@ public class SwitchCamViewButton implements Drawable {
         this.y = y;
         this.width = width;
         this.height = height;
+        borderWidth = 0.05f;
+        borderHeight = 0.05f;
     }
 
     // Method to draw the cam view button
     @Override
     public void draw(GL10 gl) {
-        gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // White color
+        gl.glColor4f(0f, 0f, 0f, 0f); // Black color
         drawRectangle(gl, x, y, width, height);
+        gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // Black color
+        drawRectangle(gl, x, y-borderHeight, width, borderHeight);  // Bottom border
+        drawRectangle(gl, x, y, borderWidth, height); // Left border
     }
 
     @Override

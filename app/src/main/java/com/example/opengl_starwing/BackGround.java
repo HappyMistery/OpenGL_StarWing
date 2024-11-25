@@ -8,7 +8,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class BackGround {
     // Variables for the Back Ground image and its lightning animation
-    private final BGImage bg;
+    private final BGImage bg, bgLightning;
     private int lightTime = 0;
     private int lightDuration = 5;
     private boolean lightOn = false;
@@ -18,8 +18,9 @@ public class BackGround {
     public BackGround(GL10 gl, Context context) {
         // Create the Background image and load its textures for the lightning animation
         bg = new BGImage();
+        bgLightning = new BGImage();
         bg.loadTexture(gl, context, R.drawable.venom1);
-        bg.loadTexture(gl, context, R.drawable.venom1lightning);
+        bgLightning.loadTexture(gl, context, R.drawable.venom1lightning);
     }
 
     public void restoreBG(Light light) {
@@ -48,9 +49,9 @@ public class BackGround {
         int randomNumber = random.nextInt(100) + 1;
         int lightningNum = 10;	// Number to display lightning
         if(randomNumber != lightningNum && !lightOn) {
-            bg.drawImage(gl, 0);
+            bg.draw(gl);
         } else {
-            bg.drawImage(gl, 1);
+            bgLightning.draw(gl);
             lightOn = true;
 
             light.setPosition(new float[]{0.0f, 1f, 0, 0.0f});

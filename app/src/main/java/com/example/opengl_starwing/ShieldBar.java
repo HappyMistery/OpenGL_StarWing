@@ -1,42 +1,40 @@
 package com.example.opengl_starwing;
 
+import android.content.Context;
+
 import javax.microedition.khronos.opengles.GL10;
 
-public class HealthBar implements Drawable {
+public class ShieldBar implements Drawable {
     private final float x, y;
-    private float width;
-    private float height;
-    private float borderHeight;
-    private float borderWidth; // Position and size of the health bar
-    private float healthPercentage;    // Health percentage (0 to 1)
+    private float shieldPercentage;    // Health percentage (0 to 1)
 
-    public HealthBar(float x, float y, float width, float height) {
+    public ShieldBar(GL10 gl, Context context, float x, float y) {
         this.x = x;
         this.y = y;
-        this.width = width;
-        this.height = height;
-        this.borderHeight = 0.05f;
-        this.borderWidth = 0.05f;
-        this.healthPercentage = 1.0f; // Full health by default
+        this.shieldPercentage = 1.0f; // Full shield by default
     }
 
-    // Method to set the health percentage (0 to 1)
-    public void setHealthPercentage(float healthPercentage) {
-        if(this.healthPercentage > 0) {
-            this.healthPercentage = healthPercentage;
+    // Method to set the shield percentage (0 to 1)
+    public void setHealthPercentage(float shieldPercentage) {
+        if(this.shieldPercentage > 0) {
+            this.shieldPercentage = shieldPercentage;
         }
     }
-    // Method to get the health percentage (0 to 1)
+    // Method to get the shield percentage (0 to 1)
     public float getHealthPercentage() {
-        return this.healthPercentage;
+        return this.shieldPercentage;
     }
 
-    // Method to draw the health bar
+    // Method to draw the shield bar
     @Override
     public void draw(GL10 gl) {
-        // Draw the health portion (red) according to healthPercentage
+        float width = 1.75f;
+        float height = 0.3f;
+        float borderHeight = 0.05f;
+        float borderWidth = 0.05f;
+        // Draw the shield portion (red) according to shieldPercentage
         gl.glColor4f(1.0f, 0.0f, 0.0f, 1.0f); // Red color
-        drawRectangle(gl, x, y, width * healthPercentage, height);
+        drawRectangle(gl, x, y, width * shieldPercentage, height);
         gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // White color
         drawRectangle(gl, x, y+height, width, borderHeight);    // Top border
         drawRectangle(gl, x, y-borderHeight, width, borderHeight);  // Bottom border
@@ -53,7 +51,7 @@ public class HealthBar implements Drawable {
     private void drawRectangle(GL10 gl, float x, float y, float width, float height) {
         gl.glPushMatrix(); // Save current matrix
 
-        // Move to the position of the health bar
+        // Move to the position of the shield bar
         gl.glTranslatef(x, y, 0);
 
         // Draw a rectangle using GL_TRIANGLE_STRIP

@@ -42,6 +42,8 @@ public class Object3D {
     int[] textures = new int[1];
     int numFaceIndexs = 0;
     private float x, y, z;
+    private int texIndex = 0;
+    private int texID;
 
     public Object3D(Context ctx, int filenameId) {
 
@@ -196,7 +198,7 @@ public class Object3D {
 
         if(textureEnabled) {
             gl.glTexCoordPointer(2, GL10.GL_FLOAT,0,texcoordBuffer);
-            gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);
+            gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[texID]);
         }
 
         gl.glDrawElements(GL10.GL_TRIANGLES, numFaceIndexs, GLES20.GL_UNSIGNED_INT, indexBuffer);
@@ -215,9 +217,10 @@ public class Object3D {
 
     // Load an image into GL texture
     public void loadTexture(GL10 gl, Context context, int textureResourceId) {
-        gl.glGenTextures(1, textures, 0); // Generate texture-ID array
+        gl.glGenTextures(1, textures, texIndex); // Generate texture-ID array
+        texID = texIndex;
 
-        gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[0]);   // Bind to texture ID
+        gl.glBindTexture(GL10.GL_TEXTURE_2D, textures[texID]);   // Bind to texture ID
         // Set up texture filters
         gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
         gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_LINEAR);
@@ -239,5 +242,6 @@ public class Object3D {
         GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
         textureEnabled=true;
+        texIndex++;
     }
 }

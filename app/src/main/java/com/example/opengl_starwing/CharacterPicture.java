@@ -1,56 +1,44 @@
 package com.example.opengl_starwing;
 
+import android.content.Context;
+
 import javax.microedition.khronos.opengles.GL10;
 
-public class BoostBar implements Drawable {
+public class CharacterPicture implements Drawable {
+    BGImage character = new BGImage();
     private final float x, y;
-    private float boostPercentage;    // Health percentage (0 to 1)
+    private int fileNameID;
 
-    public BoostBar(float x, float y) {
+    public CharacterPicture(GL10 gl, Context context, float x, float y, int fileNameID) {
+        character.loadTexture(gl, context, fileNameID);
+        this.fileNameID = fileNameID;
         this.x = x;
         this.y = y;
-        this.boostPercentage = 1.0f; // Full health by default
     }
 
-    // Method to set the boost percentage (0 to 1)
-    public void setBoostPercentage(float boostPercentage) {
-        if(this.boostPercentage > 0) {
-            this.boostPercentage = boostPercentage;
-        }
-    }
-    // Method to get the boost percentage (0 to 1)
-    public float getBoostPercentage() {
-        return this.boostPercentage;
-    }
-
-    // Method to draw the health bar
     @Override
     public void draw(GL10 gl) {
-        // Draw the boost portion (blue) according to boostPercentage
-        gl.glColor4f(0.0f, 0.0f, 1.0f, 1.0f); // Blue color
-        float width = 1.75f;
-        float height = 0.3f;
+        float width = 1.4f;
+        float height = 1.3f;
         float borderHeight = 0.05f;
         float borderWidth = 0.05f;
-        drawRectangle(gl, x, y, width * boostPercentage, height);
+        gl.glPushMatrix();
+        gl.glScalef(0.65f, 0.65f, 0.0f); // Scale the image
+        gl.glTranslatef(x-0.65f, y-1f, 0);
+        character.draw(gl);
+        gl.glPopMatrix();
+        gl.glDisable(GL10.GL_LIGHTING);
         gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // White color
-        drawRectangle(gl, x, y+ height, width, borderHeight);    // Top border
-        drawRectangle(gl, x, y- borderHeight, width, borderHeight);  // Bottom border
-        // Position and size of the health bar
-        drawRectangle(gl, x, y, borderWidth, height);   // Right border
-        drawRectangle(gl, x+ width - borderWidth, y, borderWidth, height); // Left border
+        drawRectangle(gl, x-borderHeight*6, y+height, width, borderHeight);    // Top border
+        drawRectangle(gl, x-borderHeight*6, y-borderHeight, width, borderHeight);  // Bottom border
+        drawRectangle(gl, x-borderHeight*6, y, borderWidth, height);   // Right border
+        drawRectangle(gl, x+width-borderWidth*7, y, borderWidth, height); // Left border
+        gl.glEnable(GL10.GL_LIGHTING);
     }
 
-    @Override
-    public float getZ() {
-        return 0;
-    }
-
-    // Helper method to draw a rectangle
     private void drawRectangle(GL10 gl, float x, float y, float width, float height) {
         gl.glPushMatrix(); // Save current matrix
-
-        // Move to the position of the boost bar
+        // Move to the position of the character's picture
         gl.glTranslatef(x, y, 0);
 
         // Draw a rectangle using GL_TRIANGLE_STRIP
@@ -79,11 +67,12 @@ public class BoostBar implements Drawable {
         return fb;
     }
 
-    public void useBoost() {
-        boostPercentage = Math.min(boostPercentage - 0.005f, 1.0f);
+    @Override
+    public float getZ() {
+        return 0;
     }
 
-    public void restoreBoost() {
-        boostPercentage = Math.min(boostPercentage + 0.001f, 1.0f);
+    public int getFileNameID() {
+        return fileNameID;
     }
 }

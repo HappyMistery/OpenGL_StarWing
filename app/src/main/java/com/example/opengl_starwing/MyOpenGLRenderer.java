@@ -36,7 +36,7 @@ public class MyOpenGLRenderer implements Renderer {
 		camera = new Camera();
 		arwing = new Arwing(gl, context, camera.getCamZ());
 		bg = new BackGround(gl, context);
-		hud = new HUD();
+		hud = new HUD(gl, context);
 
 		// Enable lightning in the scene
 		gl.glEnable(GL10.GL_LIGHTING);

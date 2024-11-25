@@ -20,6 +20,7 @@ public class BGImage implements Drawable{
     private FloatBuffer vertexBuffer; // Buffer for vertex-array
     private FloatBuffer texBuffer;    // Buffer for texture-coords-array (NEW)
     private int texIndex = 0;
+    private int texID;
 
     private float[] vertices = { // Vertices for a face
             -1.0f, -1.0f, 0.0f,  // 0. left-bottom-front
@@ -34,7 +35,7 @@ public class BGImage implements Drawable{
             0.0f, 0.0f,  // C. left-top (NEW)
             1.0f, 0.0f   // D. right-top (NEW)
     };
-    int[] textureIDs = new int[2];   // Array for 1 texture-ID (NEW)
+    int[] textureIDs = new int[3];   // Array for 1 texture-ID (NEW)
 
     // Constructor - Set up the buffers
     public BGImage() {
@@ -54,17 +55,13 @@ public class BGImage implements Drawable{
     }
 
     @Override
-    public void draw(GL10 gl) {
-    }
-
-    @Override
     public float getZ() {
         return 0;
     }
 
     // Draw the shape
-    //@Override
-    public void drawImage(GL10 gl, int texID) {
+    @Override
+    public void draw(GL10 gl) {
         gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[texID]);
         gl.glDisable(GL10.GL_LIGHTING);
         gl.glColor4f(1,1,1,1);
@@ -96,8 +93,9 @@ public class BGImage implements Drawable{
     // Load an image into GL texture
     public void loadTexture(GL10 gl, Context context, int fileNameID) {
         gl.glGenTextures(1, textureIDs, texIndex); // Generate texture-ID array
+        texID = texIndex;
 
-        gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[texIndex]);   // Bind to texture ID
+        gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[texID]);   // Bind to texture ID
         // Set up texture filters
         gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST);
         gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
