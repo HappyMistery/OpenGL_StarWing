@@ -41,6 +41,7 @@ public class Object3D {
 
     int[] textures = new int[1];
     int numFaceIndexs = 0;
+    private float x, y, z;
 
     public Object3D(Context ctx, int filenameId) {
 
@@ -147,6 +148,24 @@ public class Object3D {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+    public void setPosition(float x, float y, float z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public float getZ() {
+        return z;
     }
 
     public void draw(GL10 gl) {

@@ -68,14 +68,15 @@ public class HUD {
     }
 
     public void boost(Arwing arwing, Scene scene) {
+        float speed = 1;
         if (!boostActive) {
             arwing.setTargetArwingZ(-1); // Lower target Z for boost
             boostActive = true;
-            scene.setSpeed(2);
+            scene.setSpeed(speed*2);
         } else {
             arwing.setTargetArwingZ(1); // Lower target Z for boost
             boostActive = false;
-            scene.setSpeed(1);
+            scene.setSpeed(speed);
         }
     }
 }

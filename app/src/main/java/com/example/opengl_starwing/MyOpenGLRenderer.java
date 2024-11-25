@@ -12,6 +12,7 @@ public class MyOpenGLRenderer implements Renderer {
 	private BackGround bg;
     private HUD hud;
 	private Light light;
+	private Light sceneLight;
 	private Scene scene;
 	private Arwing arwing;
 
@@ -44,6 +45,13 @@ public class MyOpenGLRenderer implements Renderer {
 		light.setAmbientColor(new float[]{1f, 1f, 1f});
 		light.setDiffuseColor(new float[]{1, 1, 1});
 
+		// Initialize the second light for scene illumination
+		sceneLight = new Light(gl, GL10.GL_LIGHT1);
+		sceneLight.setPosition(new float[]{5.0f, 10.0f, 5.0f, 1.0f}); // Positioned above the buildings
+		sceneLight.setAmbientColor(new float[]{0.2f, 0.2f, 0.2f, 1.0f}); // Soft ambient light
+		sceneLight.setDiffuseColor(new float[]{0.2f, 0.2f, 0.15f, 1.0f}); // Brighter diffuse ligh
+		gl.glEnable(GL10.GL_LIGHT1); // Enable the second light
+
 		// Create the 3D scene with its moving ground points
 		int groundPointsYSpacing = 12;
 		int groundPointsPerCol = 84;
@@ -51,7 +59,7 @@ public class MyOpenGLRenderer implements Renderer {
 		int groundPointsXSpacing = 42;
 		int groundPointsPerRow = 19;
 		int gpX = (groundPointsXSpacing * groundPointsPerRow)/2;
-		scene = new Scene(gpX,-10f, gpZ);
+		scene = new Scene(gpX,-10f, gpZ, context);
 	}
 
 	// Called each frame, this draws both the 3D scene and HUD

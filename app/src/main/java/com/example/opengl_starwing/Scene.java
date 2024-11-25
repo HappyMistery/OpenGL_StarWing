@@ -1,5 +1,7 @@
 package com.example.opengl_starwing;
 
+import android.content.Context;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -14,8 +16,9 @@ public class Scene {
     private float z, prevZ;
     private final Random random = new Random();
     private final float resetThreshold; // Set a threshold for when to reset the Ground Points
+    private final Context context;
 
-    public Scene(float x, float y, float z) {
+    public Scene(float x, float y, float z, Context context) {
         dyObjs = new ArrayList<Drawable>(64);
         this.x = -x;
         this.y = y;
@@ -23,6 +26,7 @@ public class Scene {
         initialZ = -z;
         prevZ = -z;
         resetThreshold = z-1;
+        this.context = context;
 
         gp = new GroundPoints(84, 20, 42, 12, prevZ);
         gp.setPosition(0, y, -z/3);
@@ -53,16 +57,13 @@ public class Scene {
 
     private void spawnBuilding() {
         // Spawn some building every once in a while (randomly)
-        int randomNumber = random.nextInt((int) (35/speed)) + 1;
-        int spawningNum = 10;	// Number to spawn building
+        int randomNumber = random.nextInt((int) (100/speed)) + 1;
+        int spawningNum = 1;	// Number to spawn building
         if(randomNumber == spawningNum) {
-            //System.out.println("spawned a building");
             // Randomize the position of the cube
-            float randomX = random.nextFloat() * 15; // Range: 0 to 15
-            float newZ = z/(initialZ/10);
-            //System.out.println("z: " + z);
-            //System.out.println("newZ: " + newZ);
-            Building newBuilding = new Building(randomX, 0.0f, newZ);
+            float randomX = random.nextFloat() * 60; // Range: 0 to 60
+            float newZ = Math.abs(z)/(initialZ/35) - 5;
+            Building newBuilding = new Building(randomX, 0.0f, newZ, context);
             addDyLmn(newBuilding);
         }
     }
