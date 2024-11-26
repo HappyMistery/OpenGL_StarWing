@@ -11,8 +11,10 @@ public class Building implements SceneDrawable{
     private float x, y, z;
     private final Random random = new Random();
     private float sceneZ;
+    private float rotationY; // Random Y-axis rotation
 
     public Building(GL10 gl, Context context, float x, float y, float z) {
+        this.rotationY = 0;
         switch (random.nextInt(4)) {
             case 0:
                 building = new Object3D(context, R.raw.building1);
@@ -29,6 +31,7 @@ public class Building implements SceneDrawable{
             case 3:
                 building = new Object3D(context, R.raw.building4);
                 this.y = -0.2f;
+                this.rotationY = random.nextBoolean() ? 0f : 90f; // Randomly select 0 or 90 degrees
                 break;
         }
         building.loadTexture(gl, context, R.drawable.black);
@@ -54,6 +57,7 @@ public class Building implements SceneDrawable{
         gl.glPushMatrix();
         gl.glScalef(15f, 15f, 15f);
         gl.glTranslatef(x, y, z);
+        gl.glRotatef(rotationY, 0f, 1f, 0f); // Apply random rotation on Y-axis
         building.draw(gl);
         gl.glPopMatrix();
     }

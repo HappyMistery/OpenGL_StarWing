@@ -17,9 +17,12 @@ public class Arwing {
     private float targetArwingYaw = 0f;
     private float targetArwingRoll = 0f;
     private float targetArwingPitch = 0f;
+    private float rotationProgress = 0f; // Tracks progress of the rotation (0 to 1)
+    private static final float ROTATION_SPEED = 0.05f; // Speed at which progress increases
+    private float initialYaw, initialRoll, initialPitch; // Initial angles
+    private boolean isRotating = false; // Flag to check if rotation is in progress
     private float targetArwingZ = 0f; // Target Z position for the Arwing
     private static final float Z_TRANSITION_SPEED = 0.1f; // Speed of Z transition
-    private static final float ROTATION_SPEED = 0.1f;
 
     public Arwing(GL10 gl, Context context, float camZ) {
         // Load Arwing's model
@@ -43,28 +46,50 @@ public class Arwing {
         targetArwingZ += targetZ;
     }
 
+    public boolean isRotating() {
+        return isRotating;
+    }
+
+    public float getArwingRoll(){
+        return arwingRoll;
+    }
+
+    public float getArwingYaw(){
+        return arwingYaw;
+    }
+
+    public float getArwingPitch(){
+        return arwingPitch;
+    }
+
     public void draw(GL10 gl, float halfHeight) {
         // Smoothly transition the Arwing's z position
         if (Math.abs(targetArwingZ - arwingZ) > 0.01f) {
             arwingZ += (targetArwingZ - arwingZ) * Z_TRANSITION_SPEED;
         }
+
+        // Update rotation using sinusoidal easing if rotation is in progress
+        if (isRotating) {
+            rotationProgress = Math.min(1f, rotationProgress + ROTATION_SPEED);
+            float easedProgress = (float) Math.sin(rotationProgress * Math.PI / 2); // Eases progress with sin
+
+            arwingYaw = initialYaw + easedProgress * (targetArwingYaw - initialYaw);
+            arwingRoll = initialRoll + easedProgress * (targetArwingRoll - initialRoll);
+            arwingPitch = initialPitch + easedProgress * (targetArwingPitch - initialPitch);
+
+            // End rotation if the progress is complete
+            if (rotationProgress >= 1f) {
+                isRotating = false;
+            }
+        }
+
         // Draw the Arwing
         gl.glPushMatrix(); // Save the current transformation matrix
         gl.glScalef(1.0f, 1.0f, 1.0f); // Scale the Arwing
         gl.glTranslatef(arwingX, arwingY, arwingZ);
-        gl.glRotatef((arwingYaw) % 360, 0, 0, 1); // Tilt the arwing
-        gl.glRotatef(arwingRoll, 0, 1, 0); // Roll the arwing
-        gl.glRotatef(arwingPitch, 1, 0, 0); // Pitch the arwing
-        // Gradually rotate the Arwing towards the target angle
-        if (Math.abs(targetArwingYaw - arwingYaw) > 0.01f) {
-            arwingYaw += (targetArwingYaw - arwingYaw) * ROTATION_SPEED;
-        }
-        if (Math.abs(targetArwingRoll - arwingRoll) > 0.01f) {
-            arwingRoll += (targetArwingRoll - arwingRoll) * ROTATION_SPEED;
-        }
-        if (Math.abs(targetArwingPitch - arwingPitch) > 0.01f) {
-            arwingPitch += (targetArwingPitch - arwingPitch) * ROTATION_SPEED;
-        }
+        gl.glRotatef((arwingYaw) % 360, 0, 0, 1); // Tilt the Arwing
+        gl.glRotatef(arwingRoll, 0, 1, 0); // Roll the Arwing
+        gl.glRotatef(arwingPitch, 1, 0, 0); // Pitch the Arwing
         arwing.draw(gl);
         gl.glPopMatrix(); // Restore the transformation matrix
 
@@ -75,11 +100,11 @@ public class Arwing {
         float shadowScale = Math.min(0.9f, Math.max(0.3f, 1.0f - normalizedY * 0.9f));
 
         gl.glPushMatrix(); // Save the current transformation matrix
-        gl.glTranslatef(arwingX, -1.25f, arwingZ+0.1f);
+        gl.glTranslatef(arwingX, -1.25f, arwingZ + 0.1f);
         gl.glScalef(shadowScale, shadowScale, shadowScale); // Scale the Arwing shadow
-        gl.glRotatef(-arwingYaw, 0, 0, 1); // Tilt the arwing shadow
-        gl.glRotatef(180+arwingRoll, 0, 1, 0); // Roll the arwing shadow
-        gl.glRotatef(195-Math.min(arwingPitch, 3), 1, 0, 0); // Pitch the arwing shadow
+        gl.glRotatef(-arwingYaw, 0, 0, 1); // Tilt the Arwing shadow
+        gl.glRotatef(180 + arwingRoll, 0, 1, 0); // Roll the Arwing shadow
+        gl.glRotatef(195 - Math.min(arwingPitch, 3), 1, 0, 0); // Pitch the Arwing shadow
         gl.glEnable(GL10.GL_BLEND); // Enable transparency
         gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
         gl.glDisable(GL10.GL_LIGHTING);
@@ -91,27 +116,42 @@ public class Arwing {
 
     public void move(float deltaX, float deltaY, float halfWidth, float halfHeight) {
         // Clamp the Arwing's position to keep it within the viewport
-        arwingX = Math.max(-halfWidth, Math.min(arwingX+=deltaX, halfWidth));
-        arwingY = Math.max(-halfHeight, Math.min(arwingY+=deltaY, halfHeight+0.3f));
+        arwingX = Math.max(-halfWidth, Math.min(arwingX + deltaX, halfWidth));
+        arwingY = Math.max(-halfHeight, Math.min(arwingY + deltaY, halfHeight + 0.3f));
+
+        // Start rotation
+        startRotation(deltaX, deltaY);
+    }
+
+    private void startRotation(float deltaX, float deltaY) {
         float rotationAngle = 15;
+
+        // Set initial and target values for rotation
+        initialYaw = arwingYaw;
+        initialRoll = arwingRoll;
+        initialPitch = arwingPitch;
+
         if (deltaX > 0) {
-            targetArwingYaw = -rotationAngle; // Tilt right when moving right
-            targetArwingRoll = -rotationAngle*2; // Rotate right on Y-axis
+            targetArwingYaw = -rotationAngle; // Tilt right
+            targetArwingRoll = -rotationAngle * 2; // Roll right
         } else if (deltaX < 0) {
-            targetArwingYaw = rotationAngle; // Tilt left when moving left
-            targetArwingRoll = rotationAngle*2; // Rotate left on Y-axis
+            targetArwingYaw = rotationAngle; // Tilt left
+            targetArwingRoll = rotationAngle * 2; // Roll left
         } else {
-            targetArwingYaw = 0; // No tilt when not moving horizontally
-            targetArwingRoll = 0; // No rotation on Y-axis when not moving horizontally
+            targetArwingYaw = 0; // No tilt
+            targetArwingRoll = 0; // No roll
         }
 
         if (deltaY > 0) {
-            targetArwingPitch = rotationAngle*3;
+            targetArwingPitch = rotationAngle * 3; // Tilt up
         } else if (deltaY < 0) {
-            targetArwingPitch = -rotationAngle/2;
+            targetArwingPitch = -rotationAngle / 2; // Tilt down
         } else {
-            targetArwingPitch = 0;
+            targetArwingPitch = 0; // No tilt
         }
+
+        rotationProgress = 0f; // Reset progress
+        isRotating = true; // Start rotation
     }
 
     public void rotate(int angle) {

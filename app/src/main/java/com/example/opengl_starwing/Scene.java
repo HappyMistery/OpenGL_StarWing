@@ -16,6 +16,7 @@ public class Scene {
     private float z, prevZ;
     private final Random random = new Random();
     private final float resetThreshold; // Set a threshold for when to reset the Ground Points
+    private final float despawnThreshold = 650f;
     private final Context context;
 
     public Scene(float x, float y, float z, Context context) {
@@ -57,12 +58,12 @@ public class Scene {
 
     private void spawnBuilding(GL10 gl) {
         // Spawn some building every once in a while (randomly)
-        int randomNumber = random.nextInt((int) (100/speed)) + 1;
+        int randomNumber = random.nextInt((int) (30/speed)) + 1;
         int spawningNum = 1;	// Number to spawn building
         if(randomNumber == spawningNum) {
             // Randomize the position of the cube
-            float randomX = random.nextFloat() * 60; // Range: 0 to 60
-            float newZ = Math.abs(z)/(initialZ/35) - 5;
+            float randomX = random.nextFloat() * 53; // Range: 0 to 53
+            float newZ = z/(initialZ/35) - 5;
             Building newBuilding = new Building(gl, context, randomX, 0.0f, newZ);
             addDyLmn(newBuilding);
         }
@@ -72,7 +73,7 @@ public class Scene {
         // Draw other dynamic objects, skipping those past the threshold
         List<SceneDrawable> toRemove = new ArrayList<>();
         for (SceneDrawable lmn : dyObjs) {
-            if (lmn.getScenePos() > resetThreshold) {
+            if (lmn.getScenePos() > despawnThreshold) {
                 System.out.println("Deleted object at z = " + lmn.getScenePos());
                 toRemove.add(lmn); // Add objects to remove to the list
             }
