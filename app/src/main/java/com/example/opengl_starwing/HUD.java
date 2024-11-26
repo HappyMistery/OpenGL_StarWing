@@ -10,10 +10,13 @@ import javax.microedition.khronos.opengles.GL10;
 public class HUD {
     private final List<Drawable> GUI_lmns;
     private boolean boostActive = false;
-    FontRenderer fontRenderer;
-    float charSize = 0.3f;
-    float textY = 2.8f;
-    float textX = -1.3f;
+    private FontRenderer fontRenderer;
+    private float charSize = 0.3f;
+    private float textY = 2.8f;
+    private float textX = -1.3f;
+    private float pictureX = -2.4f;
+    private float pictureY = -3.75f;
+    private boolean drawClaptrap = false;
 
     public HUD(GL10 gl, Context context) {
         fontRenderer = new FontRenderer(gl, context);
@@ -57,14 +60,22 @@ public class HUD {
     private void drawTexts(GL10 gl) {
         for (Drawable lmn : GUI_lmns) {
             if (lmn instanceof CharacterPicture) {
-                if (((CharacterPicture) lmn).getFileNameID() == R.drawable.claptrap)
-                    lmn.draw(gl);  // Calls the draw method of each element
+                if (((CharacterPicture) lmn).getFileNameID() == R.drawable.claptrap) {
+                    if(drawClaptrap) {
+                        ((CharacterPicture) lmn).setPosition(pictureX, pictureY);
+                        lmn.draw(gl);
+                        fontRenderer.drawText(gl, "NOOOOO! DAMN YOU, STAIRS!", textX, textY, charSize);
+                        fontRenderer.drawText(gl, "Dammit, Jack", textX, textY+charSize, charSize);
+                        fontRenderer.drawText(gl, "how did you know stairs", textX, textY+charSize*2, charSize);
+                        fontRenderer.drawText(gl, "were my ONLY weakness?!", textX, textY+charSize*3, charSize);
+                    } else {
+                        ((CharacterPicture) lmn).setPosition(pictureX-50, pictureY-50);
+                        lmn.draw(gl);
+                    }
+
+                }
             }
         }
-        fontRenderer.drawText(gl, "NOOOOO! DAMN YOU, STAIRS!", textX, textY, charSize);
-        fontRenderer.drawText(gl, "Dammit, Jack", textX, textY+charSize, charSize);
-        fontRenderer.drawText(gl, "how did you know stairs", textX, textY+charSize*2, charSize);
-        fontRenderer.drawText(gl, "were my ONLY weakness?!", textX, textY+charSize*3, charSize);
         fontRenderer.drawText(gl, "Shield", -4.5f, 3.1f, charSize);
         fontRenderer.drawText(gl, "Boost", 3.7f, 3.1f, charSize);
         fontRenderer.drawText(gl, "Cam View", 3.7f, -3.55f, charSize);

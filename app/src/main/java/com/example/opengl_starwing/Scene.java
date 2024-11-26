@@ -37,7 +37,7 @@ public class Scene {
     }
 
     public void draw(GL10 gl) {
-        spawnBuilding();
+        spawnBuilding(gl);
         z+=speed;
 
         gl.glPushMatrix();
@@ -55,7 +55,7 @@ public class Scene {
         gl.glPopMatrix();
     }
 
-    private void spawnBuilding() {
+    private void spawnBuilding(GL10 gl) {
         // Spawn some building every once in a while (randomly)
         int randomNumber = random.nextInt((int) (100/speed)) + 1;
         int spawningNum = 1;	// Number to spawn building
@@ -63,7 +63,7 @@ public class Scene {
             // Randomize the position of the cube
             float randomX = random.nextFloat() * 60; // Range: 0 to 60
             float newZ = Math.abs(z)/(initialZ/35) - 5;
-            Building newBuilding = new Building(randomX, 0.0f, newZ, context);
+            Building newBuilding = new Building(gl, context, randomX, 0.0f, newZ);
             addDyLmn(newBuilding);
         }
     }

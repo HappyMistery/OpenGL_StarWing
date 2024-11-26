@@ -12,7 +12,7 @@ public class Building implements Drawable{
     private final Random random = new Random();
     float randY, randX, randZ;
 
-    public Building(float x, float y, float z, Context context) {
+    public Building(GL10 gl, Context context, float x, float y, float z) {
         switch (random.nextInt(4)) {
             case 0:
                 building = new Object3D(context, R.raw.building1);
@@ -31,6 +31,7 @@ public class Building implements Drawable{
                 this.y = -0.2f;
                 break;
         }
+        building.loadTexture(gl, context, R.drawable.black);
         this.x = x;
         this.z = z;
     }

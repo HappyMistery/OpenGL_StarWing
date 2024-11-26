@@ -6,7 +6,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class CharacterPicture implements Drawable {
     BGImage character = new BGImage();
-    private final float x, y;
+    private float x, y;
     private int fileNameID;
 
     public CharacterPicture(GL10 gl, Context context, float x, float y, int fileNameID) {
@@ -74,5 +74,10 @@ public class CharacterPicture implements Drawable {
 
     public int getFileNameID() {
         return fileNameID;
+    }
+
+    public void setPosition(float x, float y) {
+        this.x = x;
+        this.y = y;
     }
 }
