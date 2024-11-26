@@ -5,7 +5,7 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import javax.microedition.khronos.opengles.GL10;
 
-public class Cube implements Drawable {
+public class Cube {
     private FloatBuffer vertexBuffer; // Buffer for vertex-array
     private float x, y, z; // Coordinates for the position of the cube
 
@@ -31,7 +31,6 @@ public class Cube implements Drawable {
     }
 
     // Draw the shape
-    @Override
     public void draw(GL10 gl) {
         gl.glPushMatrix(); // Save the current state
         gl.glTranslatef(x, y, z); // Translate cube to its position
@@ -79,10 +78,5 @@ public class Cube implements Drawable {
         gl.glDisable(GL10.GL_CULL_FACE);
 
         gl.glPopMatrix(); // Restore the previous state
-    }
-
-    @Override
-    public float getZ() {
-        return z;
     }
 }

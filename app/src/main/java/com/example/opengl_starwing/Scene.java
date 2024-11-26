@@ -10,7 +10,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class Scene {
     private float speed = 1f;
-    private List<Drawable> dyObjs;
+    private List<SceneDrawable> dyObjs;
     private GroundPoints gp;
     private final float x, y, initialZ;
     private float z, prevZ;
@@ -19,7 +19,7 @@ public class Scene {
     private final Context context;
 
     public Scene(float x, float y, float z, Context context) {
-        dyObjs = new ArrayList<Drawable>(64);
+        dyObjs = new ArrayList<SceneDrawable>(64);
         this.x = -x;
         this.y = y;
         this.z = -z;
@@ -32,7 +32,7 @@ public class Scene {
         gp.setPosition(0, y, -z/3);
     }
 
-    public void addDyLmn(Drawable lmn) {
+    public void addDyLmn(SceneDrawable lmn) {
         dyObjs.add(lmn);
     }
 
@@ -46,12 +46,12 @@ public class Scene {
         gp.checkAndResetPosition(z, resetThreshold, speed, initialZ);
         gp.draw(gl);
 
-        // Draw other dynamic objects, skipping those past the threshold
-        List<Drawable> toRemove = new ArrayList<>();
-        for (Drawable lmn : dyObjs) {
-            lmn.draw(gl);  // Calls the draw method of each dynamic element
+        despawnObjects(gl);
+
+        for (SceneDrawable lmn : dyObjs) {
+            lmn.updateScenePos(lmn.getScenePos()+speed);
+            lmn.draw(gl);
         }
-        dyObjs.removeAll(toRemove); // Remove objects past the threshold
         gl.glPopMatrix();
     }
 
@@ -66,6 +66,18 @@ public class Scene {
             Building newBuilding = new Building(gl, context, randomX, 0.0f, newZ);
             addDyLmn(newBuilding);
         }
+    }
+
+    private void despawnObjects(GL10 gl) {
+        // Draw other dynamic objects, skipping those past the threshold
+        List<SceneDrawable> toRemove = new ArrayList<>();
+        for (SceneDrawable lmn : dyObjs) {
+            if (lmn.getScenePos() > resetThreshold) {
+                System.out.println("Deleted object at z = " + lmn.getScenePos());
+                toRemove.add(lmn); // Add objects to remove to the list
+            }
+        }
+        dyObjs.removeAll(toRemove); // Remove objects past the threshold
     }
 
     public void setSpeed(float speed) {

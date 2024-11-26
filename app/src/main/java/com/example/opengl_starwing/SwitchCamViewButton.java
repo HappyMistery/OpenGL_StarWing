@@ -2,7 +2,7 @@ package com.example.opengl_starwing;
 
 import javax.microedition.khronos.opengles.GL10;
 
-public class SwitchCamViewButton implements Drawable {
+public class SwitchCamViewButton implements HUDDrawable {
     private float x, y, width, height, borderHeight, borderWidth; // Position and size of the cam view button
 
     public SwitchCamViewButton(float x, float y, float width, float height) {
@@ -22,11 +22,6 @@ public class SwitchCamViewButton implements Drawable {
         gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // Black color
         drawRectangle(gl, x, y-borderHeight, width, borderHeight);  // Bottom border
         drawRectangle(gl, x, y, borderWidth, height); // Left border
-    }
-
-    @Override
-    public float getZ() {
-        return 0;
     }
 
     // Helper method to draw a rectangle

@@ -4,7 +4,7 @@ import android.content.Context;
 
 import javax.microedition.khronos.opengles.GL10;
 
-public class ShieldBar implements Drawable {
+public class ShieldBar implements HUDDrawable {
     private final float x, y;
     private float shieldPercentage;    // Health percentage (0 to 1)
 
@@ -40,11 +40,6 @@ public class ShieldBar implements Drawable {
         drawRectangle(gl, x, y-borderHeight, width, borderHeight);  // Bottom border
         drawRectangle(gl, x, y, borderWidth, height);   // Right border
         drawRectangle(gl, x+width-borderWidth, y, borderWidth, height); // Left border
-    }
-
-    @Override
-    public float getZ() {
-        return 0;
     }
 
     // Helper method to draw a rectangle

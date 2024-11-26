@@ -8,7 +8,7 @@ import java.util.List;
 import javax.microedition.khronos.opengles.GL10;
 
 public class HUD {
-    private final List<Drawable> GUI_lmns;
+    private final List<HUDDrawable> GUI_lmns;
     private boolean boostActive = false;
     private FontRenderer fontRenderer;
     private float charSize = 0.3f;
@@ -31,13 +31,13 @@ public class HUD {
         addLmn(claptrap);
     }
 
-    public void addLmn(Drawable lmn) {
+    public void addLmn(HUDDrawable lmn) {
         GUI_lmns.add(lmn);
     }
 
     public void draw(GL10 gl, Arwing arwing, Scene scene) {
         gl.glDisable(GL10.GL_LIGHTING);
-        for (Drawable lmn : GUI_lmns) {
+        for (HUDDrawable lmn : GUI_lmns) {
             if (!(lmn instanceof CharacterPicture)) {
                 lmn.draw(gl);  // Calls the draw method of each element
             }
@@ -58,7 +58,7 @@ public class HUD {
     }
 
     private void drawTexts(GL10 gl) {
-        for (Drawable lmn : GUI_lmns) {
+        for (HUDDrawable lmn : GUI_lmns) {
             if (lmn instanceof CharacterPicture) {
                 if (((CharacterPicture) lmn).getFileNameID() == R.drawable.claptrap) {
                     if(drawClaptrap) {
@@ -82,7 +82,7 @@ public class HUD {
     }
 
     public void useBoost() {
-        for (Drawable lmn : GUI_lmns) {
+        for (HUDDrawable lmn : GUI_lmns) {
             if (lmn instanceof BoostBar) {
                 ((BoostBar) lmn).useBoost();
             }
@@ -90,7 +90,7 @@ public class HUD {
     }
 
     public void stopBoost() {
-        for (Drawable lmn : GUI_lmns) {
+        for (HUDDrawable lmn : GUI_lmns) {
             if (lmn instanceof BoostBar) {
                 ((BoostBar) lmn).restoreBoost();
             }
@@ -98,7 +98,7 @@ public class HUD {
     }
 
     public float getBoostPercentage() {
-        for (Drawable lmn : GUI_lmns) {
+        for (HUDDrawable lmn : GUI_lmns) {
             if (lmn instanceof BoostBar) {
                 return ((BoostBar) lmn).getBoostPercentage();
             }

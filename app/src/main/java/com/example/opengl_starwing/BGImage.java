@@ -16,7 +16,7 @@ import android.opengl.GLUtils;
  * Define the vertices for only one representative face.
  * Render the cube by translating and rotating the face.
  */
-public class BGImage implements Drawable{
+public class BGImage{
     private FloatBuffer vertexBuffer; // Buffer for vertex-array
     private FloatBuffer texBuffer;    // Buffer for texture-coords-array (NEW)
     private int texIndex = 0;
@@ -54,13 +54,7 @@ public class BGImage implements Drawable{
         texBuffer.position(0);
     }
 
-    @Override
-    public float getZ() {
-        return 0;
-    }
-
     // Draw the shape
-    @Override
     public void draw(GL10 gl) {
         gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[texID]);
         gl.glDisable(GL10.GL_LIGHTING);

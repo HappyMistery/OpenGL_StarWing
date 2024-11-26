@@ -6,11 +6,12 @@ import java.util.List;
 
 import javax.microedition.khronos.opengles.GL10;
 
-public class GroundPoints implements Drawable{
+public class GroundPoints implements SceneDrawable{
     private final List<Cube> cubeList;
     private float x, y, z, newZ;
     private final int rows, cols;
     private final float cubeXSpacing, cubeYSpacing;
+    private float sceneZ;
 
     // Constructor
     public GroundPoints(int rows, int cols, float cubeXSpacing, float cubeYSpacing, float prevZ) {
@@ -56,8 +57,13 @@ public class GroundPoints implements Drawable{
     }
 
     @Override
-    public float getZ() {
-        return z;
+    public void updateScenePos(float z) {
+        sceneZ = z;
+    }
+
+    @Override
+    public float getScenePos() {
+        return sceneZ;
     }
 
     // Reset logic for GroundPoints

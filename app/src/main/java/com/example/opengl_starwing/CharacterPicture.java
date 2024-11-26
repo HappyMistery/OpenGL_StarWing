@@ -4,7 +4,7 @@ import android.content.Context;
 
 import javax.microedition.khronos.opengles.GL10;
 
-public class CharacterPicture implements Drawable {
+public class CharacterPicture implements HUDDrawable {
     BGImage character = new BGImage();
     private float x, y;
     private int fileNameID;
@@ -65,11 +65,6 @@ public class CharacterPicture implements Drawable {
         fb.put(array);
         fb.position(0);
         return fb;
-    }
-
-    @Override
-    public float getZ() {
-        return 0;
     }
 
     public int getFileNameID() {

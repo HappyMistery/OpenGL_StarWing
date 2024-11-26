@@ -2,7 +2,7 @@ package com.example.opengl_starwing;
 
 import javax.microedition.khronos.opengles.GL10;
 
-public class BoostBar implements Drawable {
+public class BoostBar implements HUDDrawable {
     private final float x, y;
     private float boostPercentage;    // Health percentage (0 to 1)
 
@@ -39,11 +39,6 @@ public class BoostBar implements Drawable {
         // Position and size of the health bar
         drawRectangle(gl, x, y, borderWidth, height);   // Right border
         drawRectangle(gl, x+ width - borderWidth, y, borderWidth, height); // Left border
-    }
-
-    @Override
-    public float getZ() {
-        return 0;
     }
 
     // Helper method to draw a rectangle

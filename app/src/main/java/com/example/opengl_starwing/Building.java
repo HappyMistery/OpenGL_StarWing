@@ -6,11 +6,11 @@ import java.util.Random;
 
 import javax.microedition.khronos.opengles.GL10;
 
-public class Building implements Drawable{
+public class Building implements SceneDrawable{
     private Object3D building = null;
     private float x, y, z;
     private final Random random = new Random();
-    float randY, randX, randZ;
+    private float sceneZ;
 
     public Building(GL10 gl, Context context, float x, float y, float z) {
         switch (random.nextInt(4)) {
@@ -42,16 +42,19 @@ public class Building implements Drawable{
         this.z = z;
     }
 
+    public void updateScenePos(float z) {
+        sceneZ = z;
+    }
+
+    public float getScenePos() {
+        return sceneZ;
+    }
+
     public void draw(GL10 gl) {
         gl.glPushMatrix();
         gl.glScalef(15f, 15f, 15f);
         gl.glTranslatef(x, y, z);
         building.draw(gl);
         gl.glPopMatrix();
-    }
-
-    @Override
-    public float getZ() {
-        return z;
     }
 }
