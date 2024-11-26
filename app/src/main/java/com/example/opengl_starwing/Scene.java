@@ -13,7 +13,7 @@ public class Scene {
     private List<SceneDrawable> dyObjs;
     private GroundPoints gp;
     private final float x, y, initialZ;
-    private float z, prevZ;
+    private float z, newZ;
     private final Random random = new Random();
     private final float resetThreshold; // Set a threshold for when to reset the Ground Points
     private final float despawnThreshold = 650f;
@@ -25,11 +25,10 @@ public class Scene {
         this.y = y;
         this.z = -z;
         initialZ = -z;
-        prevZ = -z;
         resetThreshold = z-1;
         this.context = context;
 
-        gp = new GroundPoints(84, 20, 42, 12, prevZ);
+        gp = new GroundPoints(84, 20, 42, 12, this.z);
         gp.setPosition(0, y, -z/3);
     }
 
@@ -40,6 +39,7 @@ public class Scene {
     public void draw(GL10 gl) {
         spawnBuilding(gl);
         z+=speed;
+        newZ += speed/12;
 
         gl.glPushMatrix();
         gl.glTranslatef(x, y, z);
@@ -63,8 +63,7 @@ public class Scene {
         if(randomNumber == spawningNum) {
             // Randomize the position of the cube
             float randomX = random.nextFloat() * 53; // Range: 0 to 53
-            float newZ = z/(initialZ/35) - 5;
-            Building newBuilding = new Building(gl, context, randomX, 0.0f, newZ);
+            Building newBuilding = new Building(gl, context, randomX, 0.0f, -newZ+30);
             addDyLmn(newBuilding);
         }
     }
@@ -74,7 +73,6 @@ public class Scene {
         List<SceneDrawable> toRemove = new ArrayList<>();
         for (SceneDrawable lmn : dyObjs) {
             if (lmn.getScenePos() > despawnThreshold) {
-                System.out.println("Deleted object at z = " + lmn.getScenePos());
                 toRemove.add(lmn); // Add objects to remove to the list
             }
         }

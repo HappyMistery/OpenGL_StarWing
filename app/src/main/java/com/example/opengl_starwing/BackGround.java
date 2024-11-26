@@ -41,7 +41,7 @@ public class BackGround {
     public void draw(GL10 gl, Light light) {
         // Draw the background in the scene
         gl.glPushMatrix(); // Save the current transformation matrix
-        gl.glScalef(35f, 35f, 0.0f); // Scale the image
+        gl.glScalef(41f, 35f, 0.0f); // Scale the image
         gl.glRotatef(0, 1, 1, 0); // Rotate the image around the X and Y axes
         gl.glTranslatef(0f, 0.4f, 0.0f);	// Set the Back ground image to the Back ground of the scene
 

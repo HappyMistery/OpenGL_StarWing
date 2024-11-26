@@ -30,7 +30,7 @@ public class Camera {
         camY = Math.max(-halfHeight / 2, Math.min(camY, halfHeight / 2));
 
         // Smoothly adjust the Y-axis rotation based on Arwing's roll
-        float maxRotationAngle = 5.0f; // Maximum tilt angle in degrees
+        float maxRotationAngle = 3.0f; // Maximum tilt angle in degrees
         if (arwing.isRotating()) {
             // Adjust the camera rotation based on the Arwing's roll for Y-axis
             float targetRotationY = -arwing.getArwingRoll() * (1 / maxRotationAngle);

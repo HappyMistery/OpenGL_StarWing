@@ -105,12 +105,10 @@ public class Arwing {
         gl.glRotatef(-arwingYaw, 0, 0, 1); // Tilt the Arwing shadow
         gl.glRotatef(180 + arwingRoll, 0, 1, 0); // Roll the Arwing shadow
         gl.glRotatef(195 - Math.min(arwingPitch, 3), 1, 0, 0); // Pitch the Arwing shadow
-        gl.glEnable(GL10.GL_BLEND); // Enable transparency
-        gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
         gl.glDisable(GL10.GL_LIGHTING);
+        arwingShadow.setAlpha(0.5f);
         arwingShadow.draw(gl);
         gl.glEnable(GL10.GL_LIGHTING);
-        gl.glDisable(GL10.GL_BLEND); // Disable transparency
         gl.glPopMatrix(); // Restore the transformation matrix
     }
 
@@ -145,7 +143,7 @@ public class Arwing {
         if (deltaY > 0) {
             targetArwingPitch = rotationAngle * 3; // Tilt up
         } else if (deltaY < 0) {
-            targetArwingPitch = -rotationAngle / 2; // Tilt down
+            targetArwingPitch = -rotationAngle; // Tilt down
         } else {
             targetArwingPitch = 0; // No tilt
         }

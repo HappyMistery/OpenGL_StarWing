@@ -44,6 +44,7 @@ public class Object3D {
     private float x, y, z;
     private int texIndex = 0;
     private int texID;
+    private float alpha = 1;
 
     public Object3D(Context ctx, int filenameId) {
 
@@ -170,10 +171,16 @@ public class Object3D {
         return z;
     }
 
+    public void setAlpha(float alpha) {
+        this.alpha = alpha;
+    }
+
     public void draw(GL10 gl) {
+        gl.glEnable(GL10.GL_BLEND); // Enable transparency
+        gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
         // Enabled the vertices buffer for writing and to be used during
         // rendering.
-        gl.glColor4f(0.1f,0.1f,0.1f,0.5f);
+        gl.glColor4f(0.1f,0.1f,0.1f,alpha);
         gl.glFrontFace(GL10.GL_CCW);    // Front face in counter-clockwise orientation
         gl.glEnable(GL10.GL_CULL_FACE); // Enable cull face
         gl.glCullFace(GL10.GL_BACK);    // Cull the back face (don't display)
@@ -213,6 +220,8 @@ public class Object3D {
         //////////////////////// NEW ////////////////////////////////
         gl.glDisableClientState(GL10.GL_NORMAL_ARRAY);
         //////////////////////// NEW ////////////////////////////////
+
+        gl.glDisable(GL10.GL_BLEND); // Disable transparency
     }
 
     // Load an image into GL texture
