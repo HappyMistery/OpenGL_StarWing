@@ -59,7 +59,7 @@ public class MyOpenGLRenderer implements Renderer {
 		int groundPointsXSpacing = 42;
 		int groundPointsPerRow = 19;
 		int gpX = (groundPointsXSpacing * groundPointsPerRow)/2;
-		scene = new Scene(gpX,-10f, gpZ, context);
+		scene = new Scene(gl, context, gpX,-10f, gpZ);
 	}
 
 	// Called each frame, this draws both the 3D scene and HUD
