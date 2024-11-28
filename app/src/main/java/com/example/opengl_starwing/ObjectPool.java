@@ -11,8 +11,8 @@ public class ObjectPool<T> {
     private final List<T> availableObjects;
     private final ObjectFactory<T> factory;
     private final int maxSize;
-    GL10 gl;
-    Context context;
+    private final GL10 gl;
+    private final Context context;
 
     public ObjectPool(GL10 gl ,Context context, ObjectFactory<T> factory, int initialSize, int maxSize) {
         this.gl = gl;
@@ -31,9 +31,8 @@ public class ObjectPool<T> {
         if (availableObjects.isEmpty()) {
             if (availableObjects.size() < maxSize) {
                 return factory.create(gl, context, 0, 0, 0);
-            } else {
-                // Pool is empty, and max size is reached
             }
+            return null;
         }
         return availableObjects.remove(availableObjects.size() - 1);
     }

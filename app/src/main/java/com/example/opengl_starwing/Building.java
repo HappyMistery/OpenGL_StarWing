@@ -74,7 +74,6 @@ public class Building implements SceneDrawable{
         if(alpha < 1f) {
             gl.glColor4f(1f, 1f, 1f, alpha);
             updateAlpha(sceneZ);
-            //System.out.println("Alpha: " + alpha);
         }
         building.draw(gl);
         gl.glPopMatrix();

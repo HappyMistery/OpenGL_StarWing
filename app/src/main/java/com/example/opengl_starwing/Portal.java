@@ -50,7 +50,7 @@ public class Portal implements SceneDrawable{
 
     public void draw(GL10 gl) {
         gl.glPushMatrix();
-        gl.glScalef(15f, 15f, 15f);
+        gl.glScalef(15f, 15f, 12f);
         gl.glTranslatef(x, y, z);
         gl.glRotatef(90, 0f, 1f, 0f);
         if(alpha < 1f) {

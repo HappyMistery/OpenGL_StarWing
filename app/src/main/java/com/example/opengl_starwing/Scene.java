@@ -34,7 +34,7 @@ public class Scene {
         gp.setPosition(0, y, -z / 3);
 
         // Initialize the ObjectPools for Building and Portal
-        buildingPool = new ObjectPool<Building>(gl, context, Building::new, 30, 40); // Max 40 buildings in pool
+        buildingPool = new ObjectPool<Building>(gl, context, Building::new, 40, 50); // Max 50 buildings in pool
         portalPool = new ObjectPool<Portal>(gl, context, Portal::new, 10, 10); // Max 10 portals in pool
     }
 
@@ -66,7 +66,7 @@ public class Scene {
 
     private void spawnBuilding(GL10 gl) {
         // Spawn a building every once in a while (randomly)
-        int randomNumber = random.nextInt((int) (45 / speed)) + 1;
+        int randomNumber = random.nextInt((int) (35 / speed)) + 1;
         if (randomNumber == spawningNum) {
             // Randomize the position of the building
             float randomX = random.nextFloat() * 53; // Range: 0 to 53
@@ -80,7 +80,7 @@ public class Scene {
 
     private void spawnPortals(GL10 gl) {
         // Spawn a portal every once in a while (randomly)
-        int randomNumber = random.nextInt((int) (120 / speed)) + 1;
+        int randomNumber = random.nextInt((int) (250 / speed)) + 1;
         if (randomNumber == spawningNum) {
             // Randomize the position of the portal
             float randomX = (random.nextFloat() * 8) + 22; // Range: 22 to 30
@@ -104,6 +104,7 @@ public class Scene {
                 } else if (lmn instanceof Portal) {
                     portalPool.returnObject((Portal) lmn);
                 }
+                lmn.updateScenePos(0f);
             }
         }
         dyObjs.removeAll(toRemove); // Remove objects past the threshold
