@@ -15,6 +15,10 @@ public class Portal implements SceneDrawable{
     private float alpha = 0.0f; // Initial alpha value
     private final float TRANSPARENCY_THRESHOLD = 20f;
     private final float FADE_IN_DISTANCE = 50f; // Range over which the building fades in
+    private final float COLLISION_THRESHOLD = 1f;
+    private boolean collided = false;
+
+    private Arwing arwing = null;
 
     public Portal(GL10 gl, Context context, float x, float y, float z) {
         portal = new Object3D(context, R.raw.portal);
@@ -31,6 +35,11 @@ public class Portal implements SceneDrawable{
         this.x = x;
         this.y = y;
         this.z = z;
+        collided = false;
+    }
+
+    public void setArwing(Arwing arwing) {
+        this.arwing = arwing;
     }
 
     public void updateScenePos(float z) {
@@ -52,6 +61,38 @@ public class Portal implements SceneDrawable{
         return sceneZ;
     }
 
+    private float mapPortalXToArwingX(float portalX) {
+        // Define the ranges
+        float portalXMin = 22f;
+        float portalXMax = 30f;
+        float arwingXMin = -4f;
+        float arwingXMax = 4f;
+
+        // Map portal x to Arwing x range
+        float arwingXRange = arwingXMax - arwingXMin;
+        float portalXRange = portalXMax - portalXMin;
+
+        return ((arwingXRange / portalXRange) * (portalX - portalXMin)) + arwingXMin;
+    }
+
+    private void checkArwingColision() {
+        float arwingX = arwing.getArwingX();
+        float mappedPortalX = mapPortalXToArwingX(x);
+
+        if (sceneZ >= 420f) {
+            System.out.println("arwingX = " + arwingX + ", mappedPortalX = " + mappedPortalX);
+        }
+
+        if (!collided) {
+            if ((Math.abs(arwingX - mappedPortalX) < COLLISION_THRESHOLD) && (sceneZ >= 500f)) {
+                System.out.println("Collision!");
+                arwing.setBoostPercentage(arwing.getBoostPercentage() + 0.5f);
+                collided = true;
+            }
+        }
+    }
+
+
     public void draw(GL10 gl) {
         gl.glPushMatrix();
         gl.glScalef(15f, 15f, 12f);
@@ -70,6 +111,7 @@ public class Portal implements SceneDrawable{
         insidePortal.draw(gl);
         gl.glEnable(GL10.GL_LIGHTING);
         gl.glDepthMask(true);  // Re-enable depth writes
+        checkArwingColision();
 
         // Draw the shadow
         /*

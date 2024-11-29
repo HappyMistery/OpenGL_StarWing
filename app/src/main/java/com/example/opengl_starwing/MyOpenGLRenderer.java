@@ -34,9 +34,9 @@ public class MyOpenGLRenderer implements Renderer {
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
 
 		camera = new Camera();
-		arwing = new Arwing(gl, context, camera.getCamZ());
 		bg = new BackGround(gl, context);
 		hud = new HUD(gl, context);
+		arwing = new Arwing(gl, context, camera.getCamZ(), hud);
 
 		// Enable lightning in the scene
 		gl.glEnable(GL10.GL_LIGHTING);
@@ -59,7 +59,7 @@ public class MyOpenGLRenderer implements Renderer {
 		int groundPointsXSpacing = 42;
 		int groundPointsPerRow = 19;
 		int gpX = (groundPointsXSpacing * groundPointsPerRow)/2;
-		scene = new Scene(gl, context, gpX,-10f, gpZ);
+		scene = new Scene(gl, context, gpX,-10f, gpZ, arwing);
 	}
 
 	// Called each frame, this draws both the 3D scene and HUD

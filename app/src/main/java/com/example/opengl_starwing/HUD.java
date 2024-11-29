@@ -118,4 +118,12 @@ public class HUD {
             scene.setSpeed(speed);
         }
     }
+
+    public void setBoostPercentage(float f) {
+        for (HUDDrawable lmn : GUI_lmns) {
+            if (lmn instanceof BoostBar) {
+                ((BoostBar) lmn).setBoostPercentage(f);
+            }
+        }
+    }
 }

@@ -22,7 +22,9 @@ public class Scene {
     private final ObjectPool<Building> buildingPool;
     private final ObjectPool<Portal> portalPool;
 
-    public Scene(GL10 gl, Context context, float x, float y, float z) {
+    private Arwing arwing;
+
+    public Scene(GL10 gl, Context context, float x, float y, float z, Arwing arwing) {
         dyObjs = new ArrayList<>(64);
         this.x = -x;
         this.y = y;
@@ -36,6 +38,8 @@ public class Scene {
         // Initialize the ObjectPools for Building and Portal
         buildingPool = new ObjectPool<Building>(gl, context, Building::new, 40, 50); // Max 50 buildings in pool
         portalPool = new ObjectPool<Portal>(gl, context, Portal::new, 10, 10); // Max 10 portals in pool
+
+        this.arwing = arwing;
     }
 
     public void addDyLmn(SceneDrawable lmn) {
@@ -88,6 +92,7 @@ public class Scene {
             Portal newPortal = portalPool.getObject();
             if (newPortal != null) {
                 newPortal.setPosition(randomX, randomY, -newZ + 30);
+                newPortal.setArwing(arwing);
                 addDyLmn(newPortal);
             }
         }

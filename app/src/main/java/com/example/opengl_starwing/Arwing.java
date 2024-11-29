@@ -24,7 +24,9 @@ public class Arwing {
     private float targetArwingZ = 0f; // Target Z position for the Arwing
     private static final float Z_TRANSITION_SPEED = 0.1f; // Speed of Z transition
 
-    public Arwing(GL10 gl, Context context, float camZ) {
+    private HUD hud;
+
+    public Arwing(GL10 gl, Context context, float camZ, HUD hud) {
         // Load Arwing's model
         arwing = new Object3D(context, R.raw.nau);
         arwingShadow = new Object3D(context, R.raw.nau);
@@ -32,6 +34,16 @@ public class Arwing {
 
         arwingZ = camZ - 2.35f;
         targetArwingZ = camZ - 2.35f;
+
+        this.hud = hud;
+    }
+
+    public float getBoostPercentage() {
+        return hud.getBoostPercentage();
+    }
+
+    public void setBoostPercentage(float f) {
+        hud.setBoostPercentage(f);
     }
 
     public float getArwingX() {
