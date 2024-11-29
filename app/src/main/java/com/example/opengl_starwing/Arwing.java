@@ -85,7 +85,6 @@ public class Arwing {
 
         // Draw the Arwing
         gl.glPushMatrix(); // Save the current transformation matrix
-        gl.glScalef(1.0f, 1.0f, 1.0f); // Scale the Arwing
         gl.glTranslatef(arwingX, arwingY, arwingZ);
         gl.glRotatef((arwingYaw) % 360, 0, 0, 1); // Tilt the Arwing
         gl.glRotatef(arwingRoll, 0, 1, 0); // Roll the Arwing
@@ -107,6 +106,7 @@ public class Arwing {
         gl.glRotatef(195 - Math.min(arwingPitch, 3), 1, 0, 0); // Pitch the Arwing shadow
         gl.glDisable(GL10.GL_LIGHTING);
         arwingShadow.setAlpha(0.5f);
+        arwingShadow.setRGB(0.1f, 0.1f, 0.1f);
         arwingShadow.draw(gl);
         gl.glEnable(GL10.GL_LIGHTING);
         gl.glPopMatrix(); // Restore the transformation matrix

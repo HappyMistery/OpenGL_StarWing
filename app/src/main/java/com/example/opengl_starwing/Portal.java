@@ -8,8 +8,9 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class Portal implements SceneDrawable{
     private Object3D portal = null;
+    private Object3D insidePortal = null;
+    private Object3D portalShadow = null; // Shadow object
     private float x, y, z;
-    private final Random random = new Random();
     private float sceneZ;
     private float alpha = 0.0f; // Initial alpha value
     private final float TRANSPARENCY_THRESHOLD = 20f;
@@ -17,7 +18,10 @@ public class Portal implements SceneDrawable{
 
     public Portal(GL10 gl, Context context, float x, float y, float z) {
         portal = new Object3D(context, R.raw.portal);
+        portalShadow = new Object3D(context, R.raw.portal); // Initialize shadow
         portal.loadTexture(gl, context, R.drawable.portalpalette);
+        insidePortal = new Object3D(context, R.raw.insideportal);
+        //insidePortal.loadTexture(gl, context, R.drawable.insideportal);
         this.x = x;
         this.y = y;
         this.z = z;
@@ -54,10 +58,28 @@ public class Portal implements SceneDrawable{
         gl.glTranslatef(x, y, z);
         gl.glRotatef(90, 0f, 1f, 0f);
         if(alpha < 1f) {
-            gl.glColor4f(1f, 1f, 1f, alpha);
+            portal.setAlpha(alpha);
+            portal.setRGB(1f, 1f, 1f);
             updateAlpha(sceneZ);
         }
         portal.draw(gl);
+        insidePortal.setAlpha(0.5f);
+        insidePortal.setRGB(0.2f, 0.2f, 0.4f);
+        gl.glDepthMask(false);  // Disable depth writes
+        gl.glDisable(GL10.GL_LIGHTING);
+        insidePortal.draw(gl);
+        gl.glEnable(GL10.GL_LIGHTING);
+        gl.glDepthMask(true);  // Re-enable depth writes
+
+        // Draw the shadow
+        /*
+        gl.glScalef(0.8f, 0.8f, 0.8f);
+        gl.glRotatef(180, 1f, 0f, 0f);
+        gl.glDisable(GL10.GL_LIGHTING);
+        portalShadow.setAlpha(1f);
+        portalShadow.draw(gl);
+        gl.glEnable(GL10.GL_LIGHTING);
+         */
         gl.glPopMatrix();
     }
 }

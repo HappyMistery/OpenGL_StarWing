@@ -43,8 +43,8 @@ public class Scene {
     }
 
     public void draw(GL10 gl) {
-        spawnBuilding(gl);
         spawnPortals(gl);
+        spawnBuilding(gl);
 
         z += speed;
         newZ += speed / 12;

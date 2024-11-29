@@ -8,7 +8,8 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class Building implements SceneDrawable{
     private Object3D building = null;
-    private float x, y, z;
+    private Object3D buildingShadow = null; // Shadow object
+    private float x, y, z, shadowY;
     private final Random random = new Random();
     private float sceneZ;
     private float rotationY; // Random Y-axis rotation
@@ -21,19 +22,27 @@ public class Building implements SceneDrawable{
         switch (random.nextInt(4)) {
             case 0:
                 building = new Object3D(context, R.raw.building1);
+                buildingShadow = new Object3D(context, R.raw.building1); // Initialize shadow
                 this.y = 2.5f;
+                shadowY = -5f;
                 break;
             case 1:
                 building = new Object3D(context, R.raw.building2);
+                buildingShadow = new Object3D(context, R.raw.building2); // Initialize shadow
                 this.y = 2.1f;
+                shadowY = -2.5f;
                 break;
             case 2:
                 building = new Object3D(context, R.raw.building3);
+                buildingShadow = new Object3D(context, R.raw.building3); // Initialize shadow
                 this.y = -0.1f;
+                shadowY = 0.1f;
                 break;
             case 3:
                 building = new Object3D(context, R.raw.building4);
+                buildingShadow = new Object3D(context, R.raw.building4); // Initialize shadow
                 this.y = -0.2f;
+                shadowY = 0.2f;
                 this.rotationY = random.nextBoolean() ? 0f : 90f; // Randomly select 0 or 90 degrees
                 break;
         }
@@ -76,6 +85,17 @@ public class Building implements SceneDrawable{
             updateAlpha(sceneZ);
         }
         building.draw(gl);
+
+        // Draw the shadow
+        /*
+        gl.glScalef(0.8f, 0.8f, 0.8f);
+        gl.glTranslatef(0, shadowY, 0);
+        gl.glRotatef(180, 1f, 0f, 0f);
+        gl.glDisable(GL10.GL_LIGHTING);
+        buildingShadow.setAlpha(1f);
+        buildingShadow.draw(gl);
+        gl.glEnable(GL10.GL_LIGHTING);
+         */
         gl.glPopMatrix();
     }
 }
