@@ -61,8 +61,7 @@ public class Portal implements SceneDrawable{
         return sceneZ;
     }
 
-    private float mapPortalXToArwingX(float portalX) {
-        // Define the ranges
+    private float mapPortalXToArwingX() {
         float portalXMin = 22f;
         float portalXMax = 30f;
         float arwingXMin = -4f;
@@ -72,20 +71,32 @@ public class Portal implements SceneDrawable{
         float arwingXRange = arwingXMax - arwingXMin;
         float portalXRange = portalXMax - portalXMin;
 
-        return ((arwingXRange / portalXRange) * (portalX - portalXMin)) + arwingXMin;
+        return ((arwingXRange / portalXRange) * (x - portalXMin)) + arwingXMin;
+    }
+
+    private float mapPortalYToArwingY() {
+        float portalYMin = 0f;
+        float portalYMax = 2f;
+        float arwingYMin = -1f;
+        float arwingYMax = 1.3f;
+
+        // Map portal y to Arwing y range
+        float arwingYRange = arwingYMax - arwingYMin;
+        float portalYRange = portalYMax - portalYMin;
+
+        return ((arwingYRange / portalYRange) * (y - portalYMin)) + arwingYMin;
     }
 
     private void checkArwingColision() {
         float arwingX = arwing.getArwingX();
-        float mappedPortalX = mapPortalXToArwingX(x);
-
-        if (sceneZ >= 420f) {
-            System.out.println("arwingX = " + arwingX + ", mappedPortalX = " + mappedPortalX);
-        }
+        float arwingY = arwing.getArwingY();
+        float mappedPortalX = mapPortalXToArwingX();
+        float mappedPortalY = mapPortalYToArwingY();
 
         if (!collided) {
-            if ((Math.abs(arwingX - mappedPortalX) < COLLISION_THRESHOLD) && (sceneZ >= 500f)) {
-                System.out.println("Collision!");
+            if ((Math.abs(arwingX - mappedPortalX) < COLLISION_THRESHOLD) &&
+                    (Math.abs(arwingY - mappedPortalY) < COLLISION_THRESHOLD) &&
+                    (sceneZ >= 450f) && (sceneZ <= 455f)) {
                 arwing.setBoostPercentage(arwing.getBoostPercentage() + 0.5f);
                 collided = true;
             }

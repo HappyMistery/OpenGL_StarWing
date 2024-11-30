@@ -77,6 +77,7 @@ public class Scene {
             Building newBuilding = buildingPool.getObject();
             if (newBuilding != null) {
                 newBuilding.setPosition(randomX, -newZ + 30);
+                newBuilding.setArwing(arwing);
                 addDyLmn(newBuilding);
             }
         }

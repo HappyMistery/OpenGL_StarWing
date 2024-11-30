@@ -4,6 +4,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
+import android.content.Intent;
 import android.opengl.GLSurfaceView.Renderer;
 import android.opengl.GLU;
 
@@ -21,7 +22,7 @@ public class MyOpenGLRenderer implements Renderer {
 	// Width and height of the rendering and movement area (screen)
 	public int width;
 	public int height;
-	public float halfWidth;
+	public float halfWidth = 5f;
 	public float halfHeight = 4f;
 
 	public MyOpenGLRenderer(Context context){
@@ -35,7 +36,7 @@ public class MyOpenGLRenderer implements Renderer {
 
 		camera = new Camera();
 		bg = new BackGround(gl, context);
-		hud = new HUD(gl, context);
+		hud = new HUD(gl, context, halfHeight, halfWidth);
 		arwing = new Arwing(gl, context, camera.getCamZ(), hud);
 
 		// Enable lightning in the scene
@@ -156,10 +157,21 @@ public class MyOpenGLRenderer implements Renderer {
 	}
 
 	public void switchCameraView() {
+		if(hud.gameOver()) {
+			restartApp();
+		}
 		camera.switchPOV();
 	}
 
 	public void boost() {
 		hud.boost(arwing, scene);
+	}
+
+	public void restartApp() {
+		Intent intent = new Intent(context, MainActivity.class);
+		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+		context.startActivity(intent);
+
+		System.exit(0);	// Exit the process
 	}
 }

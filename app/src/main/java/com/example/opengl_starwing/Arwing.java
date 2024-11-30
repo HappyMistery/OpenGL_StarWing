@@ -46,6 +46,14 @@ public class Arwing {
         hud.setBoostPercentage(f);
     }
 
+    public float getShieldPercentage() {
+        return hud.getShieldPercentage();
+    }
+
+    public void setShieldPercentage(float f) {
+        hud.setShieldPercentage(f);
+    }
+
     public float getArwingX() {
         return arwingX;
     }

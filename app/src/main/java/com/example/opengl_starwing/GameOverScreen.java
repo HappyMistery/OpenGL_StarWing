@@ -1,34 +1,61 @@
 package com.example.opengl_starwing;
 
+import android.content.Context;
+
 import javax.microedition.khronos.opengles.GL10;
 
-public class SwitchCamViewButton implements HUDDrawable {
-    private float x, y, width, height, borderHeight, borderWidth; // Position and size of the cam view button
+public class GameOverScreen implements HUDDrawable {
+    private boolean active; // Whether the GameOverScreen is active
+    private final float x, y;
+    private final float halfHeight, halfWidth;
 
-    public SwitchCamViewButton(float x, float y, float width, float height) {
+    public GameOverScreen(float x, float y, float halfHeight, float halfWidth) {
         this.x = x;
         this.y = y;
-        this.width = width;
-        this.height = height;
-        borderWidth = 0.05f;
-        borderHeight = 0.05f;
+        this.halfHeight = halfHeight;
+        this.halfWidth = halfWidth;
+        this.active = false; // Starts inactive
     }
 
-    // Method to draw the cam view button
+    // Activate the Game Over screen
+    public void activate() {
+        active = true;
+    }
+
+    // Deactivate the Game Over screen
+    public void deactivate() {
+        active = false;
+    }
+
+    // Check if the Game Over screen is active
+    public boolean isActive() {
+        return active;
+    }
+
+    // Draw the Game Over screen
     @Override
     public void draw(GL10 gl) {
-        gl.glColor4f(0f, 0f, 0f, 0f); // Black color
+        if (!active) return; // Skip drawing if not active
+
+        float width = halfWidth * 2f;
+        float height = halfHeight * 1.975f;
+        float borderHeight = 0.05f;
+        float borderWidth = 0.05f;
+        // Draw the black screen
+        gl.glColor4f(0.0f, 0.0f, 0.0f, 1.0f); // Black color
         drawRectangle(gl, x, y, width, height);
-        gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // Black color
+        gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // White color
+        drawRectangle(gl, x, y+height, width, borderHeight);    // Top border
         drawRectangle(gl, x, y-borderHeight, width, borderHeight);  // Bottom border
-        drawRectangle(gl, x, y, borderWidth, height); // Left border
+        drawRectangle(gl, x, y, borderWidth, height);   // Right border
+        drawRectangle(gl, x+width-borderWidth, y, borderWidth, height); // Left border
     }
 
     // Helper method to draw a rectangle
     private void drawRectangle(GL10 gl, float x, float y, float width, float height) {
         gl.glPushMatrix(); // Save current matrix
 
-        // Move to the position of the cam view button
+        // Move to the position of the shield bar
         gl.glTranslatef(x, y, 0);
 
         // Draw a rectangle using GL_TRIANGLE_STRIP

@@ -12,10 +12,15 @@ public class Building implements SceneDrawable{
     private float x, y, z, shadowY;
     private final Random random = new Random();
     private float sceneZ;
+    private float buildingHeight;
     private float rotationY; // Random Y-axis rotation
     private float alpha = 0.0f; // Initial alpha value
     private final float TRANSPARENCY_THRESHOLD = 20f;
     private final float FADE_IN_DISTANCE = 50f; // Range over which the building fades in
+    private final float COLLISION_THRESHOLD = 1.5f;
+    private boolean collided = false;
+
+    private Arwing arwing = null;
 
     public Building(GL10 gl, Context context, float x, float y, float z) {
         this.rotationY = 0;
@@ -24,24 +29,28 @@ public class Building implements SceneDrawable{
                 building = new Object3D(context, R.raw.building1);
                 buildingShadow = new Object3D(context, R.raw.building1); // Initialize shadow
                 this.y = 2.5f;
+                buildingHeight = this.y * 3;
                 shadowY = -5f;
                 break;
             case 1:
                 building = new Object3D(context, R.raw.building2);
                 buildingShadow = new Object3D(context, R.raw.building2); // Initialize shadow
                 this.y = 2.1f;
+                buildingHeight = this.y * 3;
                 shadowY = -2.5f;
                 break;
             case 2:
                 building = new Object3D(context, R.raw.building3);
                 buildingShadow = new Object3D(context, R.raw.building3); // Initialize shadow
                 this.y = -0.1f;
+                buildingHeight = 1.2f;
                 shadowY = 0.1f;
                 break;
             case 3:
                 building = new Object3D(context, R.raw.building4);
                 buildingShadow = new Object3D(context, R.raw.building4); // Initialize shadow
                 this.y = -0.2f;
+                buildingHeight = 1.1f;
                 shadowY = 0.2f;
                 this.rotationY = random.nextBoolean() ? 0f : 90f; // Randomly select 0 or 90 degrees
                 break;
@@ -54,6 +63,11 @@ public class Building implements SceneDrawable{
     public void setPosition(float x, float z) {
         this.x = x;
         this.z = z;
+        collided = false;
+    }
+
+    public void setArwing(Arwing arwing) {
+        this.arwing = arwing;
     }
 
     public void updateScenePos(float z) {
@@ -75,9 +89,39 @@ public class Building implements SceneDrawable{
         return sceneZ;
     }
 
+    private float mapBuildingXToArwingX() {
+        float buildingXMin = 0f;
+        float buildingXMax = 53f;
+        float arwingXMin = -4f;
+        float arwingXMax = 4f;
+
+        // Map portal x to Arwing x range
+        float arwingXRange = arwingXMax - arwingXMin;
+        float buildingXRange = buildingXMax - buildingXMin;
+
+        return ((arwingXRange / buildingXRange) * (x - buildingXMin)) + arwingXMin;
+    }
+
+
+    private void checkArwingColision() {
+        float arwingX = arwing.getArwingX();
+        float arwingY = arwing.getArwingY();
+        float mappedBuildingX = mapBuildingXToArwingX();
+
+        if (!collided) {
+            if((sceneZ >= 420f) && (sceneZ <= 425f)) {
+                if ((Math.abs(arwingX - mappedBuildingX) < COLLISION_THRESHOLD) &&
+                        (arwingY + 1 < buildingHeight)) {
+                    arwing.setShieldPercentage(arwing.getShieldPercentage() - 0.25f);
+                    collided = true;
+                }
+            }
+        }
+    }
+
     public void draw(GL10 gl) {
         gl.glPushMatrix();
-        gl.glScalef(12f, 15f, 12f);
+        gl.glScalef(15f, 15f, 12f);
         gl.glTranslatef(x, y, z);
         gl.glRotatef(rotationY, 0f, 1f, 0f); // Apply random rotation on Y-axis
         if(alpha < 1f) {
@@ -85,6 +129,7 @@ public class Building implements SceneDrawable{
             updateAlpha(sceneZ);
         }
         building.draw(gl);
+        checkArwingColision();
 
         // Draw the shadow
         /*

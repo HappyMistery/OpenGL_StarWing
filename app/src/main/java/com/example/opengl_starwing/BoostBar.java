@@ -15,7 +15,7 @@ public class BoostBar implements HUDDrawable {
     // Method to set the boost percentage (0 to 1)
     public void setBoostPercentage(float boostPercentage) {
         if(this.boostPercentage > 0) {
-            this.boostPercentage = boostPercentage;
+            this.boostPercentage = Math.min(1f, boostPercentage);
         }
     }
     // Method to get the boost percentage (0 to 1)
