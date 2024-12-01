@@ -71,7 +71,7 @@ public class Portal implements SceneDrawable{
         float arwingXRange = arwingXMax - arwingXMin;
         float portalXRange = portalXMax - portalXMin;
 
-        return ((arwingXRange / portalXRange) * (x - portalXMin)) + arwingXMin;
+        return ((arwingXRange / portalXRange) * ((x-0.5f) - portalXMin)) + arwingXMin;
     }
 
     private float mapPortalYToArwingY() {
