@@ -76,8 +76,8 @@ public class MyOpenGLRenderer implements Renderer {
 
         camera.setCameraView(gl, arwing, halfWidth, halfHeight);
 		bg.draw(gl, light);
-		drawScene(gl);
 		arwing.draw(gl, halfHeight);
+		drawScene(gl);
 		bg.restoreBG(light);	// Disable Lightning after a certain time
 
 		// Switch to 2D mode (HUD) and draw the HUD

@@ -8,6 +8,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class Portal implements SceneDrawable{
     private Object3D portal = null;
+    private Object3D portalSpiral = null;
     private Object3D insidePortal = null;
     private Object3D portalShadow = null; // Shadow object
     private float x, y, z;
@@ -17,6 +18,7 @@ public class Portal implements SceneDrawable{
     private final float FADE_IN_DISTANCE = 50f; // Range over which the building fades in
     private final float COLLISION_THRESHOLD = 1f;
     private boolean collided = false;
+    private float spiralAngle = 0f;
 
     private Arwing arwing = null;
 
@@ -25,7 +27,10 @@ public class Portal implements SceneDrawable{
         portalShadow = new Object3D(context, R.raw.portal); // Initialize shadow
         portal.loadTexture(gl, context, R.drawable.portalpalette);
         insidePortal = new Object3D(context, R.raw.insideportal);
-        //insidePortal.loadTexture(gl, context, R.drawable.insideportal);
+        insidePortal.setAlpha(0.5f);
+        insidePortal.setRGB(0.0f, 0.1f, 0.1f);
+        portalSpiral = new Object3D(context, R.raw.insideportal);
+        portalSpiral.loadTexture(gl, context, R.drawable.insideportal);
         this.x = x;
         this.y = y;
         this.z = z;
@@ -115,13 +120,6 @@ public class Portal implements SceneDrawable{
             updateAlpha(sceneZ);
         }
         portal.draw(gl);
-        insidePortal.setAlpha(0.5f);
-        insidePortal.setRGB(0.2f, 0.2f, 0.4f);
-        gl.glDepthMask(false);  // Disable depth writes
-        gl.glDisable(GL10.GL_LIGHTING);
-        insidePortal.draw(gl);
-        gl.glEnable(GL10.GL_LIGHTING);
-        gl.glDepthMask(true);  // Re-enable depth writes
         checkArwingColision();
 
         // Draw the shadow
@@ -133,6 +131,22 @@ public class Portal implements SceneDrawable{
         portalShadow.draw(gl);
         gl.glEnable(GL10.GL_LIGHTING);
          */
+        gl.glPopMatrix();
+    }
+
+    public void drawInnerPortal(GL10 gl) {
+        gl.glPushMatrix();
+        gl.glScalef(15f, 15f, 12f);
+        gl.glTranslatef(x, y, z);
+        gl.glRotatef(90, 0f, 1f, 0f);
+        gl.glScalef(0.9f, 0.9f, 0.9f);
+        gl.glDisable(GL10.GL_LIGHTING);
+        insidePortal.draw(gl);
+        gl.glEnable(GL10.GL_LIGHTING);
+        spiralAngle += 2f;
+        gl.glScalef(1.3f, 1.3f, 1.3f);
+        gl.glRotatef(spiralAngle % 360, 1f, 0f, 0f);
+        portalSpiral.draw(gl);
         gl.glPopMatrix();
     }
 }

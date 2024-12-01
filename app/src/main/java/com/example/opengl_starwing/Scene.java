@@ -61,9 +61,17 @@ public class Scene {
 
         despawnObjects(gl);
 
+        // Draw opaque objects first
         for (SceneDrawable lmn : dyObjs) {
             lmn.updateScenePos(lmn.getScenePos() + speed);
             lmn.draw(gl);
+        }
+
+        // Draw semi-transparent objects after
+        for (SceneDrawable lmn : dyObjs) {
+            if (lmn instanceof Portal) {
+                ((Portal) lmn).drawInnerPortal(gl);
+            }
         }
         gl.glPopMatrix();
     }
