@@ -15,7 +15,7 @@ public class MyOpenGLRenderer implements Renderer {
 	private Light light;
 	private Light sceneLight;
 	private Scene scene;
-	private Arwing arwing;
+	private Armwing armwing;
 
 	private final Context context;
 
@@ -37,7 +37,7 @@ public class MyOpenGLRenderer implements Renderer {
 		camera = new Camera();
 		bg = new BackGround(gl, context);
 		hud = new HUD(gl, context, halfHeight, halfWidth);
-		arwing = new Arwing(gl, context, camera.getCamZ(), hud);
+		armwing = new Armwing(gl, context, camera.getCamZ(), hud, camera);
 
 		// Enable lightning in the scene
 		gl.glEnable(GL10.GL_LIGHTING);
@@ -60,7 +60,7 @@ public class MyOpenGLRenderer implements Renderer {
 		int groundPointsXSpacing = 42;
 		int groundPointsPerRow = 19;
 		int gpX = (groundPointsXSpacing * groundPointsPerRow)/2;
-		scene = new Scene(gl, context, gpX,-10f, gpZ, arwing);
+		scene = new Scene(gl, context, gpX,-10f, gpZ, armwing);
 	}
 
 	// Called each frame, this draws both the 3D scene and HUD
@@ -74,15 +74,15 @@ public class MyOpenGLRenderer implements Renderer {
 		// Set the general light's position
 		light.setPosition(new float[]{0, 2f, -2, 0});
 
-        camera.setCameraView(gl, arwing, halfWidth, halfHeight);
+        camera.setCameraView(gl, armwing, halfWidth, halfHeight);
 		bg.draw(gl, light);
-		arwing.draw(gl, halfHeight);
+		armwing.draw(gl, halfHeight);
 		drawScene(gl);
 		bg.restoreBG(light);	// Disable Lightning after a certain time
 
 		// Switch to 2D mode (HUD) and draw the HUD
 		setOrthographicProjection(gl);
-		hud.draw(gl, arwing, scene);
+		hud.draw(gl, armwing, scene);
 	}
 
 	private void drawScene(GL10 gl) {
@@ -144,16 +144,16 @@ public class MyOpenGLRenderer implements Renderer {
 		gl.glViewport(0, 0, width, height);
 	}
 
-	public void moveArwing(float deltaX, float deltaY) {
-		arwing.move(deltaX, deltaY, halfWidth, halfHeight);
+	public void moveArmwing(float deltaX, float deltaY) {
+		armwing.move(deltaX, deltaY, halfWidth, halfHeight);
 	}
 
-	public void stopArwingAngle(){
-		arwing.resetAngle();
+	public void stopArmwingAngle(){
+		armwing.resetAngle();
 	}
 
-	public void rotateArwing(int angle){
-		arwing.rotate(angle);
+	public void rotateArmwing(int angle){
+		armwing.rotate(angle);
 	}
 
 	public void switchCameraView() {
@@ -164,7 +164,7 @@ public class MyOpenGLRenderer implements Renderer {
 	}
 
 	public void boost() {
-		hud.boost(arwing, scene);
+		hud.boost(armwing, scene);
 	}
 
 	public void restartApp() {

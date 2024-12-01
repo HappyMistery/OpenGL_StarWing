@@ -33,7 +33,7 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 if (isMoving) {
-                    myGLRenderer.moveArwing(moveX, moveY);
+                    myGLRenderer.moveArmwing(moveX, moveY);
                     movementHandler.postDelayed(this, 16); // Repeat roughly every 16ms (~60 FPS)
                 }
             }
@@ -94,7 +94,7 @@ public class MainActivity extends Activity {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 isMoving = false; // Stop movement when touch is released
-                myGLRenderer.stopArwingAngle();
+                myGLRenderer.stopArmwingAngle();
 
                 // Detect if the touch was a quick swipe
                 long elapsedTime = System.currentTimeMillis() - initialTime;
@@ -103,9 +103,9 @@ public class MainActivity extends Activity {
                 if (elapsedTime < SWIPE_THRESHOLD_TIME && Math.abs(distanceX) > SWIPE_THRESHOLD_DISTANCE) {
                     // Determine the direction of the swipe
                     if (distanceX > 0) {
-                        myGLRenderer.rotateArwing(-90); // Right swipe
+                        myGLRenderer.rotateArmwing(-90); // Right swipe
                     } else {
-                        myGLRenderer.rotateArwing(90); // Left swipe
+                        myGLRenderer.rotateArmwing(90); // Left swipe
                     }
                 }
 

@@ -8,6 +8,7 @@ public class GameOverScreen implements HUDDrawable {
     private boolean active; // Whether the GameOverScreen is active
     private final float x, y;
     private final float halfHeight, halfWidth;
+    private float alpha = 0;
 
     public GameOverScreen(float x, float y, float halfHeight, float halfWidth) {
         this.x = x;
@@ -37,18 +38,22 @@ public class GameOverScreen implements HUDDrawable {
     public void draw(GL10 gl) {
         if (!active) return; // Skip drawing if not active
 
+        gl.glEnable(GL10.GL_BLEND); // Enable transparency
+        gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+        alpha += 0.025f;
         float width = halfWidth * 2f;
         float height = halfHeight * 1.975f;
         float borderHeight = 0.05f;
         float borderWidth = 0.05f;
         // Draw the black screen
-        gl.glColor4f(0.0f, 0.0f, 0.0f, 1.0f); // Black color
+        gl.glColor4f(0.0f, 0.0f, 0.0f, alpha); // Black color
         drawRectangle(gl, x, y, width, height);
         gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // White color
         drawRectangle(gl, x, y+height, width, borderHeight);    // Top border
         drawRectangle(gl, x, y-borderHeight, width, borderHeight);  // Bottom border
         drawRectangle(gl, x, y, borderWidth, height);   // Right border
         drawRectangle(gl, x+width-borderWidth, y, borderWidth, height); // Left border
+        gl.glDisable(GL10.GL_BLEND); // Disable transparency
     }
 
     // Helper method to draw a rectangle

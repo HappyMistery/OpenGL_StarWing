@@ -20,7 +20,7 @@ public class Building implements SceneDrawable{
     private float Y_COLLISION_THRESHOLD;
     private boolean collided = false;
 
-    private Arwing arwing = null;
+    private Armwing armwing = null;
 
     public Building(GL10 gl, Context context, float x, float y, float z) {
         this.rotationY = 0;
@@ -65,8 +65,8 @@ public class Building implements SceneDrawable{
         collided = false;
     }
 
-    public void setArwing(Arwing arwing) {
-        this.arwing = arwing;
+    public void setArmwing(Armwing armwing) {
+        this.armwing = armwing;
     }
 
     public void updateScenePos(float z) {
@@ -88,45 +88,46 @@ public class Building implements SceneDrawable{
         return sceneZ;
     }
 
-    private float mapBuildingXToArwingX() {
-        float buildingXMin = 22f;
-        float buildingXMax = 30f;
-        float arwingXMin = -4f;
-        float arwingXMax = 4f;
+    private float mapBuildingXToArmwingX() {
+        float buildingXMin = 20f;
+        float buildingXMax = 32f;
+        float armwingXMin = -4f;
+        float armwingXMax = 4f;
 
-        // Map building x to Arwing x range
-        float arwingXRange = arwingXMax - arwingXMin;
+        // Map building x to Armwing x range
+        float armwingXRange = armwingXMax - armwingXMin;
         float buildingXRange = buildingXMax - buildingXMin;
 
-        return ((arwingXRange / buildingXRange) * ((x-0.75f) - buildingXMin)) + arwingXMin;
+        return ((armwingXRange / buildingXRange) * ((x-0.75f) - buildingXMin)) + armwingXMin;
     }
 
-    private float mapBuildingYToArwingY() {
+    private float mapBuildingYToArmwingY() {
         float buildingYMin = -0.2f;
         float buildingYMax = 2.5f;
-        float arwingYMin = -1f;
-        float arwingYMax = 1.3f;
+        float armwingYMin = -1f;
+        float armwingYMax = 1.3f;
 
-        // Map building y to Arwing y range
-        float arwingYRange = arwingYMax - arwingYMin;
+        // Map building y to Armwing y range
+        float armwingYRange = armwingYMax - armwingYMin;
         float buildingYRange = buildingYMax - buildingYMin;
 
-        return ((arwingYRange / buildingYRange) * (-buildingYMin)) + arwingYMin;
+        return ((armwingYRange / buildingYRange) * (-buildingYMin)) + armwingYMin;
     }
 
 
-    private void checkArwingColision() {
-        float arwingX = arwing.getArwingX();
-        float arwingY = arwing.getArwingY();
-        float mappedBuildingX = mapBuildingXToArwingX();
-        float mappedBuildingY = mapBuildingYToArwingY();
+    private void checkArmwingColision() {
+        float armwingX = armwing.getArmwingX();
+        float armwingY = armwing.getArmwingY();
+        float mappedBuildingX = mapBuildingXToArmwingX();
+        float mappedBuildingY = mapBuildingYToArmwingY();
 
-        if (!collided && x >= 22 && x <= 30) {
-            if ((Math.abs(arwingX - mappedBuildingX) < X_COLLISION_THRESHOLD) &&
-                    (Math.abs(arwingY - mappedBuildingY) < Y_COLLISION_THRESHOLD) &&
-                    (sceneZ >= 420f) && (sceneZ <= 425f)) {
-                arwing.setShieldPercentage(arwing.getShieldPercentage() - 0.25f);
+        if (!collided && x >= 20 && x <= 32) {
+            if ((Math.abs(armwingX - mappedBuildingX) < X_COLLISION_THRESHOLD) &&
+                    (Math.abs(armwingY - mappedBuildingY) < Y_COLLISION_THRESHOLD) &&
+                    (sceneZ >= 415f) && (sceneZ <= 420f)) {
+                armwing.setShieldPercentage(armwing.getShieldPercentage() - 0.25f);
                 collided = true;
+                armwing.getCam().startShake(0.5f, 1.0f);
             }
         }
     }
@@ -141,7 +142,7 @@ public class Building implements SceneDrawable{
             updateAlpha(sceneZ);
         }
         building.draw(gl);
-        checkArwingColision();
+        checkArmwingColision();
 
         // Draw the shadow
         /*

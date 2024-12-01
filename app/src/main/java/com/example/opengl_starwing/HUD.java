@@ -37,7 +37,7 @@ public class HUD {
         GUI_lmns.add(lmn);
     }
 
-    public void draw(GL10 gl, Arwing arwing, Scene scene) {
+    public void draw(GL10 gl, Armwing armwing, Scene scene) {
         gl.glDisable(GL10.GL_LIGHTING);
         for (HUDDrawable lmn : GUI_lmns) {
             if (!(lmn instanceof CharacterPicture)) {
@@ -54,7 +54,7 @@ public class HUD {
 
         if (boostActive && getBoostPercentage() <= 0.01) {
             stopBoost();
-            boost(arwing, scene);
+            boost(armwing, scene);
         }
 
         // Check for Game Over condition
@@ -68,7 +68,7 @@ public class HUD {
     }
 
     private void drawTexts(GL10 gl) {
-        float charSize = 0.3f;
+        float charSize = 0.4f;
         float pictureX = -2.4f;
         float pictureY = -3.75f;
         if(drawClaptrap) {
@@ -76,22 +76,24 @@ public class HUD {
             claptrap.draw(gl);
             float textY = 2.8f;
             float textX = -1.3f;
+            charSize = 0.3f;
             fontRenderer.drawText(gl, "NOOOOO! DAMN YOU, STAIRS!", textX, textY, charSize);
             fontRenderer.drawText(gl, "Dammit, Jack", textX, textY + charSize, charSize);
             fontRenderer.drawText(gl, "how did you know stairs", textX, textY + charSize *2, charSize);
             fontRenderer.drawText(gl, "were my ONLY weakness?!", textX, textY + charSize *3, charSize);
+            charSize = 0.4f;
         } else {
             claptrap.setPosition(pictureX -50, pictureY -50);
             claptrap.draw(gl);
         }
 
         if(gameOverScreen.isActive()) {
-            fontRenderer.drawText(gl, "GAME OVER", -2f, 0.5f, charSize*3);
-            fontRenderer.drawText(gl, "Restart", 3.7f, -3.55f, charSize);
+            fontRenderer.drawText(gl, "GAME OVER", -2f, 0.5f, charSize*2f);
+            fontRenderer.drawText(gl, "Restart", 3.7f, -3.55f, charSize-0.1f);
         } else {
-            fontRenderer.drawText(gl, "Shield", -4.5f, 3.1f, charSize);
-            fontRenderer.drawText(gl, "Boost", 3.7f, 3.1f, charSize);
-            fontRenderer.drawText(gl, "Cam View", 3.7f, -3.55f, charSize);
+            fontRenderer.drawText(gl, "Shield", -4.6f, 3.1f, charSize);
+            fontRenderer.drawText(gl, "Boost", 3.4f, 3.1f, charSize);
+            fontRenderer.drawText(gl, "Cam View", 3.7f, -3.55f, charSize-0.1f);
         }
     }
 
@@ -103,14 +105,14 @@ public class HUD {
         return boostBar.getBoostPercentage();
     }
 
-    public void boost(Arwing arwing, Scene scene) {
+    public void boost(Armwing armwing, Scene scene) {
         float speed = 1;
         if (!boostActive) {
-            arwing.setTargetArwingZ(-1); // Lower target Z for boost
+            armwing.setTargetArmwingZ(-1); // Lower target Z for boost
             boostActive = true;
             scene.setSpeed(speed*2);
         } else {
-            arwing.setTargetArwingZ(1); // Lower target Z for boost
+            armwing.setTargetArmwingZ(1); // Lower target Z for boost
             boostActive = false;
             scene.setSpeed(speed);
         }

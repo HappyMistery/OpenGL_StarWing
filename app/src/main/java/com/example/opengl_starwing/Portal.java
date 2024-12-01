@@ -20,7 +20,7 @@ public class Portal implements SceneDrawable{
     private boolean collided = false;
     private float spiralAngle = 0f;
 
-    private Arwing arwing = null;
+    private Armwing armwing = null;
 
     public Portal(GL10 gl, Context context, float x, float y, float z) {
         portal = new Object3D(context, R.raw.portal);
@@ -43,8 +43,8 @@ public class Portal implements SceneDrawable{
         collided = false;
     }
 
-    public void setArwing(Arwing arwing) {
-        this.arwing = arwing;
+    public void setArmwing(Armwing armwing) {
+        this.armwing = armwing;
     }
 
     public void updateScenePos(float z) {
@@ -66,43 +66,43 @@ public class Portal implements SceneDrawable{
         return sceneZ;
     }
 
-    private float mapPortalXToArwingX() {
+    private float mapPortalXToArmwingX() {
         float portalXMin = 22f;
         float portalXMax = 30f;
-        float arwingXMin = -4f;
-        float arwingXMax = 4f;
+        float armwingXMin = -4f;
+        float armwingXMax = 4f;
 
-        // Map portal x to Arwing x range
-        float arwingXRange = arwingXMax - arwingXMin;
+        // Map portal x to Armwing x range
+        float armwingXRange = armwingXMax - armwingXMin;
         float portalXRange = portalXMax - portalXMin;
 
-        return ((arwingXRange / portalXRange) * ((x-0.5f) - portalXMin)) + arwingXMin;
+        return ((armwingXRange / portalXRange) * ((x-0.5f) - portalXMin)) + armwingXMin;
     }
 
-    private float mapPortalYToArwingY() {
+    private float mapPortalYToArmwingY() {
         float portalYMin = 0f;
         float portalYMax = 2f;
-        float arwingYMin = -1f;
-        float arwingYMax = 1.3f;
+        float armwingYMin = -1f;
+        float armwingYMax = 1.3f;
 
-        // Map portal y to Arwing y range
-        float arwingYRange = arwingYMax - arwingYMin;
+        // Map portal y to Armwing y range
+        float armwingYRange = armwingYMax - armwingYMin;
         float portalYRange = portalYMax - portalYMin;
 
-        return ((arwingYRange / portalYRange) * (y - portalYMin)) + arwingYMin;
+        return ((armwingYRange / portalYRange) * (y - portalYMin)) + armwingYMin;
     }
 
-    private void checkArwingColision() {
-        float arwingX = arwing.getArwingX();
-        float arwingY = arwing.getArwingY();
-        float mappedPortalX = mapPortalXToArwingX();
-        float mappedPortalY = mapPortalYToArwingY();
+    private void checkArmwingColision() {
+        float armwingX = armwing.getArmwingX();
+        float armwingY = armwing.getArmwingY();
+        float mappedPortalX = mapPortalXToArmwingX();
+        float mappedPortalY = mapPortalYToArmwingY();
 
         if (!collided) {
-            if ((Math.abs(arwingX - mappedPortalX) < COLLISION_THRESHOLD) &&
-                    (Math.abs(arwingY - mappedPortalY) < COLLISION_THRESHOLD) &&
+            if ((Math.abs(armwingX - mappedPortalX) < COLLISION_THRESHOLD) &&
+                    (Math.abs(armwingY - mappedPortalY) < COLLISION_THRESHOLD) &&
                     (sceneZ >= 450f) && (sceneZ <= 455f)) {
-                arwing.setBoostPercentage(arwing.getBoostPercentage() + 0.5f);
+                armwing.setBoostPercentage(armwing.getBoostPercentage() + 0.5f);
                 collided = true;
             }
         }
@@ -120,7 +120,7 @@ public class Portal implements SceneDrawable{
             updateAlpha(sceneZ);
         }
         portal.draw(gl);
-        checkArwingColision();
+        checkArmwingColision();
 
         // Draw the shadow
         /*
