@@ -52,14 +52,16 @@ public class MainActivity extends Activity {
                 // Check if user touches to switch camera view
                 if (x > (float) myGLRenderer.width / 8 * 7 && y < (float) myGLRenderer.height / 12) {
                     myGLRenderer.switchCameraView();
+                    return true;
                 }
+
                 // Check if the touch is in the bottom-right part of the screen for boosting
                 if (x > (float) myGLRenderer.width / 4 * 3 && y > (float) myGLRenderer.height / 8 * 7) {
                     myGLRenderer.boost();
                     return true;
                 }
 
-                isMoving = false; // Stop any previous movement
+                // If the touch doesn't fall under specific regions, it might be a tap to shoot
                 initialX = event.getX();
                 initialY = event.getY();
                 initialTime = System.currentTimeMillis();
@@ -107,6 +109,9 @@ public class MainActivity extends Activity {
                     } else {
                         myGLRenderer.rotateArmwing(90); // Left swipe
                     }
+                } else if (elapsedTime < SWIPE_THRESHOLD_TIME && Math.abs(distanceX) <= SWIPE_THRESHOLD_DISTANCE) {
+                    // If it's not a swipe and falls within reasonable time, treat as a tap to shoot
+                    myGLRenderer.shootProjectile();
                 }
 
                 return true;

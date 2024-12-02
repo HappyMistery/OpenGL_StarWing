@@ -11,8 +11,7 @@ public class Portal implements SceneDrawable{
     private Object3D portalSpiral = null;
     private Object3D insidePortal = null;
     private Object3D portalShadow = null; // Shadow object
-    private float x, y, z;
-    private float sceneZ;
+    private float x, y, z, sceneZ;
     private float alpha = 0.0f; // Initial alpha value
     private final float TRANSPARENCY_THRESHOLD = 20f;
     private final float FADE_IN_DISTANCE = 50f; // Range over which the building fades in
@@ -80,8 +79,8 @@ public class Portal implements SceneDrawable{
     }
 
     private float mapPortalYToArmwingY() {
-        float portalYMin = 0f;
-        float portalYMax = 2f;
+        float portalYMin = 0.2f;
+        float portalYMax = 2.2f;
         float armwingYMin = -1f;
         float armwingYMax = 1.3f;
 

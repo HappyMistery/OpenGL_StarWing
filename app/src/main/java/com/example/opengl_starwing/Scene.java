@@ -10,22 +10,27 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class Scene {
     private float speed = 1f;
+    private final float projectileSpeed = -2f;
     private final List<SceneDrawable> dyObjs;
+    private final List<Projectile> projectiles;
     private final GroundPoints gp;
     private final float x, y, initialZ;
-    private float z, newZ;
+    private float z, newZ, armwingZ;
     private final Random random = new Random();
     private final int spawningNum = 1;    // Number to spawn building
     private final float resetThreshold; // Set a threshold for when to reset the Ground Points
     private final float despawnThreshold = 650f;
+    private final float projectileDespawnThreshold = -790f;
 
     private final ObjectPool<Building> buildingPool;
     private final ObjectPool<Portal> portalPool;
+    private final ObjectPool<Projectile> projectilePool;
 
     private Armwing armwing;
 
     public Scene(GL10 gl, Context context, float x, float y, float z, Armwing armwing) {
         dyObjs = new ArrayList<>(64);
+        projectiles = new ArrayList<>(256);
         this.x = -x;
         this.y = y;
         this.z = -z;
@@ -38,6 +43,7 @@ public class Scene {
         // Initialize the ObjectPools for Building and Portal
         buildingPool = new ObjectPool<Building>(gl, context, Building::new, 40, 50); // Max 50 buildings in pool
         portalPool = new ObjectPool<Portal>(gl, context, Portal::new, 10, 10); // Max 10 portals in pool
+        projectilePool = new ObjectPool<Projectile>(gl, context, Projectile::new, 128, 128); // Max 128 projectiles in pool
 
         this.armwing = armwing;
     }
@@ -47,11 +53,12 @@ public class Scene {
     }
 
     public void draw(GL10 gl) {
-        spawnPortals(gl);
-        spawnBuilding(gl);
+        spawnPortals();
+        spawnBuilding();
 
         z += speed;
         newZ += speed / 12;
+        armwingZ += speed;
 
         gl.glPushMatrix();
         gl.glTranslatef(x, y, z);
@@ -59,12 +66,18 @@ public class Scene {
         gp.checkAndResetPosition(z, resetThreshold, speed, initialZ);
         gp.draw(gl);
 
-        despawnObjects(gl);
+        despawnObjects();
+        deleteProjectile();
 
         // Draw opaque objects first
         for (SceneDrawable lmn : dyObjs) {
             lmn.updateScenePos(lmn.getScenePos() + speed);
             lmn.draw(gl);
+        }
+
+        for (Projectile projectile : projectiles) {
+            projectile.updateScenePos(projectile.getScenePos());
+            projectile.draw(gl);
         }
 
         // Draw semi-transparent objects after
@@ -76,7 +89,7 @@ public class Scene {
         gl.glPopMatrix();
     }
 
-    private void spawnBuilding(GL10 gl) {
+    private void spawnBuilding() {
         // Spawn a building every once in a while (randomly)
         int randomNumber = random.nextInt((int) (35 / speed)) + 1;
         if (randomNumber == spawningNum) {
@@ -91,13 +104,13 @@ public class Scene {
         }
     }
 
-    private void spawnPortals(GL10 gl) {
+    private void spawnPortals() {
         // Spawn a portal every once in a while (randomly)
         int randomNumber = random.nextInt((int) (250 / speed)) + 1;
         if (randomNumber == spawningNum) {
             // Randomize the position of the portal
             float randomX = (random.nextFloat() * 8) + 22; // Range: 22 to 30
-            float randomY = (random.nextFloat() * 2) + 0.2f; // Range: 0 to 2
+            float randomY = (random.nextFloat() * 2) + 0.2f; // Range: 0.2 to 2.2
             Portal newPortal = portalPool.getObject();
             if (newPortal != null) {
                 newPortal.setPosition(randomX, randomY, -newZ + 30);
@@ -107,7 +120,7 @@ public class Scene {
         }
     }
 
-    private void despawnObjects(GL10 gl) {
+    private void despawnObjects() {
         List<SceneDrawable> toRemove = new ArrayList<>();
         for (SceneDrawable lmn : dyObjs) {
             if (lmn.getScenePos() > despawnThreshold) {
@@ -122,6 +135,26 @@ public class Scene {
             }
         }
         dyObjs.removeAll(toRemove); // Remove objects past the threshold
+    }
+
+    public void shootProjectile(float armwingX, float armwingY, float armwingZ) {
+        Projectile projectile = projectilePool.getObject();
+        projectile.setPosition(armwingX, armwingY, -this.armwingZ + -projectileDespawnThreshold);
+        projectiles.add(projectile);
+    }
+
+    public void deleteProjectile() {
+        List<Projectile> toRemove = new ArrayList<>();
+        for (Projectile lmn : projectiles) {
+            if (lmn.getScenePos() < projectileDespawnThreshold) {
+                toRemove.add(lmn); // Add objects to remove to the list
+                // Return objects to their pools
+                projectilePool.returnObject(lmn);
+                lmn.updateScenePos(0f);
+                lmn.powerOffLight();
+            }
+        }
+        projectiles.removeAll(toRemove); // Remove objects past the threshold
     }
 
     public void setSpeed(float speed) {

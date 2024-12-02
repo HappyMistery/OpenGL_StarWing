@@ -10,13 +10,11 @@ public class Building implements SceneDrawable{
     private Object3D building = null;
     private Object3D buildingShadow = null; // Shadow object
     private float x, y, z, shadowY;
-    private final Random random = new Random();
     private float sceneZ;
     private float rotationY; // Random Y-axis rotation
     private float alpha = 0.0f; // Initial alpha value
     private final float TRANSPARENCY_THRESHOLD = 20f;
     private final float FADE_IN_DISTANCE = 50f; // Range over which the building fades in
-    private final float X_COLLISION_THRESHOLD = 1.5f;
     private float Y_COLLISION_THRESHOLD;
     private boolean collided = false;
 
@@ -25,6 +23,7 @@ public class Building implements SceneDrawable{
     public Building(GL10 gl, Context context, float x, float y, float z) {
         this.rotationY = 0;
         Y_COLLISION_THRESHOLD = 5f;
+        Random random = new Random();
         switch (random.nextInt(4)) {
             case 0:
                 building = new Object3D(context, R.raw.building1);
@@ -98,7 +97,7 @@ public class Building implements SceneDrawable{
         float armwingXRange = armwingXMax - armwingXMin;
         float buildingXRange = buildingXMax - buildingXMin;
 
-        return ((armwingXRange / buildingXRange) * ((x-0.75f) - buildingXMin)) + armwingXMin;
+        return ((armwingXRange / buildingXRange) * (x - buildingXMin)) + armwingXMin;
     }
 
     private float mapBuildingYToArmwingY() {
@@ -122,7 +121,8 @@ public class Building implements SceneDrawable{
         float mappedBuildingY = mapBuildingYToArmwingY();
 
         if (!collided && x >= 20 && x <= 32) {
-            if ((Math.abs(armwingX - mappedBuildingX) < X_COLLISION_THRESHOLD) &&
+            float x_COLLISION_THRESHOLD = 1.5f;
+            if ((Math.abs(armwingX - mappedBuildingX) < x_COLLISION_THRESHOLD) &&
                     (Math.abs(armwingY - mappedBuildingY) < Y_COLLISION_THRESHOLD) &&
                     (sceneZ >= 415f) && (sceneZ <= 420f)) {
                 armwing.setShieldPercentage(armwing.getShieldPercentage() - 0.25f);

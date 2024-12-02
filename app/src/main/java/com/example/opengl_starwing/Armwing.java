@@ -2,6 +2,9 @@ package com.example.opengl_starwing;
 
 import android.content.Context;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.microedition.khronos.opengles.GL10;
 
 public class Armwing {
@@ -112,6 +115,11 @@ public class Armwing {
         // Draw the Armwing
         gl.glPushMatrix(); // Save the current transformation matrix
         gl.glTranslatef(armwingX, armwingY, armwingZ);
+        gl.glPopMatrix(); // Restore the transformation matrix
+
+        // Draw the Armwing
+        gl.glPushMatrix(); // Save the current transformation matrix
+        gl.glTranslatef(armwingX, armwingY, armwingZ);
         gl.glRotatef((armwingYaw) % 360, 0, 0, 1); // Tilt the Armwing
         gl.glRotatef(armwingRoll, 0, 1, 0); // Roll the Armwing
         gl.glRotatef(armwingPitch, 1, 0, 0); // Pitch the Armwing
@@ -191,5 +199,9 @@ public class Armwing {
         targetArmwingYaw = 0;
         targetArmwingRoll = 0;
         targetArmwingPitch = 0;
+    }
+
+    public void shootProjectile(Scene scene) {
+        scene.shootProjectile(armwingX, armwingY, armwingZ);
     }
 }

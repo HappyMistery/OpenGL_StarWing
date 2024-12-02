@@ -45,13 +45,14 @@ public class MyOpenGLRenderer implements Renderer {
 		light.setPosition(new float[]{0.0f, 1f, 1, 0.0f});
 		light.setAmbientColor(new float[]{1f, 1f, 1f});
 		light.setDiffuseColor(new float[]{1, 1, 1});
+		light.enable();
 
 		// Initialize the second light for scene illumination
 		sceneLight = new Light(gl, GL10.GL_LIGHT1);
 		sceneLight.setPosition(new float[]{5.0f, 10.0f, 5.0f, 1.0f}); // Positioned above the buildings
 		sceneLight.setAmbientColor(new float[]{0.2f, 0.2f, 0.2f, 1.0f}); // Soft ambient light
 		sceneLight.setDiffuseColor(new float[]{0.2f, 0.2f, 0.15f, 1.0f}); // Brighter diffuse ligh
-		gl.glEnable(GL10.GL_LIGHT1); // Enable the second light
+		sceneLight.enable(); // Enable the second light
 
 		// Create the 3D scene with its moving ground points
 		int groundPointsYSpacing = 12;
@@ -155,6 +156,8 @@ public class MyOpenGLRenderer implements Renderer {
 	public void rotateArmwing(int angle){
 		armwing.rotate(angle);
 	}
+
+	public void shootProjectile() { armwing.shootProjectile(scene); }
 
 	public void switchCameraView() {
 		if(hud.gameOver()) {
