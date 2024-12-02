@@ -16,6 +16,7 @@ public class Building implements SceneDrawable{
     private final float TRANSPARENCY_THRESHOLD = 20f;
     private final float FADE_IN_DISTANCE = 50f; // Range over which the building fades in
     private float Y_COLLISION_THRESHOLD;
+    private float X_COLLISION_THRESHOLD;
     private boolean collided = false;
 
     private Armwing armwing = null;
@@ -29,18 +30,21 @@ public class Building implements SceneDrawable{
                 building = new Object3D(context, R.raw.building1);
                 buildingShadow = new Object3D(context, R.raw.building1); // Initialize shadow
                 this.y = 2.5f;
+                X_COLLISION_THRESHOLD = 1.4f;
                 shadowY = -5f;
                 break;
             case 1:
                 building = new Object3D(context, R.raw.building2);
                 buildingShadow = new Object3D(context, R.raw.building2); // Initialize shadow
                 this.y = 2.1f;
+                X_COLLISION_THRESHOLD = 1.5f;
                 shadowY = -2.5f;
                 break;
             case 2:
                 building = new Object3D(context, R.raw.building3);
                 buildingShadow = new Object3D(context, R.raw.building3); // Initialize shadow
                 this.y = -0.1f;
+                X_COLLISION_THRESHOLD = 1.5f;
                 Y_COLLISION_THRESHOLD = 1.1f;
                 shadowY = 0.1f;
                 break;
@@ -48,6 +52,7 @@ public class Building implements SceneDrawable{
                 building = new Object3D(context, R.raw.building4);
                 buildingShadow = new Object3D(context, R.raw.building4); // Initialize shadow
                 this.y = -0.2f;
+                X_COLLISION_THRESHOLD = 0.9f;
                 Y_COLLISION_THRESHOLD = 0.9f;
                 shadowY = 0.2f;
                 this.rotationY = random.nextBoolean() ? 0f : 90f; // Randomly select 0 or 90 degrees
@@ -88,16 +93,13 @@ public class Building implements SceneDrawable{
     }
 
     private float mapBuildingXToArmwingX() {
-        float buildingXMin = 20f;
-        float buildingXMax = 32f;
+        float buildingXMin = 22f;
+        float buildingXMax = 30f;
         float armwingXMin = -4f;
         float armwingXMax = 4f;
 
-        // Map building x to Armwing x range
-        float armwingXRange = armwingXMax - armwingXMin;
-        float buildingXRange = buildingXMax - buildingXMin;
-
-        return ((armwingXRange / buildingXRange) * (x - buildingXMin)) + armwingXMin;
+        // Calculate the mapped X position without arbitrary offsets
+        return armwingXMin + (((x-0.5f) - buildingXMin) / (buildingXMax - buildingXMin)) * (armwingXMax - armwingXMin);
     }
 
     private float mapBuildingYToArmwingY() {
@@ -120,11 +122,10 @@ public class Building implements SceneDrawable{
         float mappedBuildingX = mapBuildingXToArmwingX();
         float mappedBuildingY = mapBuildingYToArmwingY();
 
-        if (!collided && x >= 20 && x <= 32) {
-            float x_COLLISION_THRESHOLD = 1.5f;
-            if ((Math.abs(armwingX - mappedBuildingX) < x_COLLISION_THRESHOLD) &&
+        if (!collided) {
+            if ((Math.abs(armwingX - mappedBuildingX) < X_COLLISION_THRESHOLD) &&
                     (Math.abs(armwingY - mappedBuildingY) < Y_COLLISION_THRESHOLD) &&
-                    (sceneZ >= 415f) && (sceneZ <= 420f)) {
+                    (sceneZ >= 415f) && (sceneZ <= 425f)) {
                 armwing.setShieldPercentage(armwing.getShieldPercentage() - 0.25f);
                 collided = true;
                 armwing.getCam().startShake(0.5f, 1.0f);

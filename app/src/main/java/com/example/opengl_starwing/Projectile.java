@@ -69,8 +69,9 @@ public class Projectile implements SceneDrawable{
 
         // Update the light position to follow the projectile
         light.setPosition(new float[]{x, y, z, 1.0f});
-        light.setDiffuseColor(new float[]{0.1f, 0.1f, 0.4f, 0.01f}); // Brighter blue diffuse
-        light.setSpecularColor(new float[]{0.5f, 0.5f, 0.5f, 0.1f}); // White specular highlight
+        light.setDiffuseColor(new float[]{0.2f, 0.2f, 0.6f, 1.0f});
+        light.setSpecularColor(new float[]{0.5f, 0.5f, 0.5f, 1.0f});
+        light.setAttenuation(1.0f, 0.1f, 0.02f);
         light.enable();
     }
 

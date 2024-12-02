@@ -56,4 +56,9 @@ public class Light {
 		gl.glLightfv(lightid, GL10.GL_SPECULAR, fb);
 	}
 
+	public void setAttenuation(float constant, float linear, float quadratic) {
+		gl.glLightf(lightid, GL10.GL_CONSTANT_ATTENUATION, constant);
+		gl.glLightf(lightid, GL10.GL_LINEAR_ATTENUATION, linear);
+		gl.glLightf(lightid, GL10.GL_QUADRATIC_ATTENUATION, quadratic);
+	}
 }
