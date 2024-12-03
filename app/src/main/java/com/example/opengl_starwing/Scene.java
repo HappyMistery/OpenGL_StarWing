@@ -5,6 +5,7 @@ import android.content.Context;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -12,7 +13,7 @@ public class Scene {
     private float speed = 1f;
     private final float projectileSpeed = -2f;
     private final List<SceneDrawable> dyObjs;
-    private final List<Projectile> projectiles;
+    private final CopyOnWriteArrayList<Projectile> projectiles; // Array safe for threading
     private final GroundPoints gp;
     private final float x, y, initialZ;
     private float z, newZ, armwingZ;
@@ -30,7 +31,7 @@ public class Scene {
 
     public Scene(GL10 gl, Context context, float x, float y, float z, Armwing armwing) {
         dyObjs = new ArrayList<>(64);
-        projectiles = new ArrayList<>(256);
+        projectiles = new CopyOnWriteArrayList<Projectile>();
         this.x = -x;
         this.y = y;
         this.z = -z;
