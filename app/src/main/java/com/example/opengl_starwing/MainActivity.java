@@ -5,6 +5,8 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.WindowManager;
 
 public class MainActivity extends Activity {
     private static final float MOVEMENT_SPEED = 0.05f;
@@ -23,6 +25,7 @@ public class MainActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setImmersiveMode();
         GLSurfaceView view = new GLSurfaceView(this);
         view.setRenderer(myGLRenderer = new MyOpenGLRenderer(this));
         setContentView(view);
@@ -49,21 +52,8 @@ public class MainActivity extends Activity {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                // Check if user touches to switch camera view
-                if (x > (float) myGLRenderer.width / 8 * 7 && y < (float) myGLRenderer.height / 12) {
-                    myGLRenderer.switchCameraView();
-                    return true;
-                }
-
-                // Check if the touch is in the bottom-right part of the screen for boosting
-                if (x > (float) myGLRenderer.width / 4 * 3 && y > (float) myGLRenderer.height / 8 * 7) {
-                    myGLRenderer.boost();
-                    return true;
-                }
-
-                // If the touch doesn't fall under specific regions, it might be a tap to shoot
-                initialX = event.getX();
-                initialY = event.getY();
+                initialX = x;
+                initialY = y;
                 initialTime = System.currentTimeMillis();
                 return true;
 
@@ -71,19 +61,21 @@ public class MainActivity extends Activity {
                 float dx = x - initialX;
                 float dy = y - initialY;
 
-                // Determine whether movement should be treated as diagonal or straight
+                // Ignore minor movements below a threshold
+                if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+                    return true; // Ignore small unintentional moves
+                }
+
+                // Determine movement direction
                 if (Math.abs(dx) > DIAGONAL_TOLERANCE && Math.abs(dy) > DIAGONAL_TOLERANCE) {
-                    // Diagonal movement detection
                     moveX = (dx > 0) ? MOVEMENT_SPEED : -MOVEMENT_SPEED;
                     moveY = (dy > 0) ? -MOVEMENT_SPEED : MOVEMENT_SPEED;
                 } else if (Math.abs(dx) > Math.abs(dy)) {
-                    // Prioritize horizontal movement if it is more significant than vertical
                     moveX = (dx > 0) ? MOVEMENT_SPEED : -MOVEMENT_SPEED;
-                    moveY = 0; // No vertical movement
-                } else if (Math.abs(dy) > Math.abs(dx)) {
-                    // Prioritize vertical movement if it is more significant than horizontal
+                    moveY = 0;
+                } else {
                     moveY = (dy > 0) ? -MOVEMENT_SPEED : MOVEMENT_SPEED;
-                    moveX = 0; // No horizontal movement
+                    moveX = 0;
                 }
 
                 if (!isMoving) {
@@ -95,27 +87,45 @@ public class MainActivity extends Activity {
 
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                isMoving = false; // Stop movement when touch is released
+                isMoving = false; // Stop movement
                 myGLRenderer.stopArmwingAngle();
 
-                // Detect if the touch was a quick swipe
                 long elapsedTime = System.currentTimeMillis() - initialTime;
                 float distanceX = x - initialX;
+                float distanceY = y - initialY;
 
+                // Detect swipe
                 if (elapsedTime < SWIPE_THRESHOLD_TIME && Math.abs(distanceX) > SWIPE_THRESHOLD_DISTANCE) {
-                    // Determine the direction of the swipe
                     if (distanceX > 0) {
                         myGLRenderer.rotateArmwing(-90); // Right swipe
                     } else {
                         myGLRenderer.rotateArmwing(90); // Left swipe
                     }
-                } else if (elapsedTime < SWIPE_THRESHOLD_TIME && Math.abs(distanceX) <= SWIPE_THRESHOLD_DISTANCE) {
-                    // If it's not a swipe and falls within reasonable time, treat as a tap to shoot
+                } else if (Math.abs(distanceX) < 10 && Math.abs(distanceY) < 10) {
+                    // Treat as a tap if no significant movement occurred
                     myGLRenderer.shootProjectile();
                 }
 
                 return true;
         }
         return false;
+    }
+
+
+    private void setImmersiveMode(){
+        int newUiOptions = getWindow().getDecorView().getSystemUiVisibility();
+
+        //Set the Flags for maximum Screen utilization
+        //We have Immersive mode available
+        newUiOptions = newUiOptions | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+
+        newUiOptions = newUiOptions | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+        newUiOptions = newUiOptions | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
+
+        //All flags are a go, let it rip!!
+        getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
     }
 }
