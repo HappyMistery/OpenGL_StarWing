@@ -21,6 +21,7 @@ public class BGImage{
     private FloatBuffer texBuffer;    // Buffer for texture-coords-array (NEW)
     private int texIndex = 0;
     private int texID;
+    private float alpha = 1.0f;
 
     private float[] vertices = { // Vertices for a face
             -1.0f, -1.0f, 0.0f,  // 0. left-bottom-front
@@ -58,7 +59,9 @@ public class BGImage{
     public void draw(GL10 gl) {
         gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[texID]);
         gl.glDisable(GL10.GL_LIGHTING);
-        gl.glColor4f(1,1,1,1);
+        gl.glEnable(GL10.GL_BLEND); // Enable transparency
+        gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+        gl.glColor4f(1,1,1, alpha);
 
         gl.glFrontFace(GL10.GL_CCW);    // Front face in counter-clockwise orientation
         gl.glEnable(GL10.GL_CULL_FACE); // Enable cull face
@@ -81,6 +84,7 @@ public class BGImage{
         gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
         gl.glDisable(GL10.GL_CULL_FACE);
         gl.glDisable(GL10.GL_TEXTURE_2D);  // Enable texture (NEW));
+        gl.glDisable(GL10.GL_BLEND); // Disable transparency
         gl.glEnable(GL10.GL_LIGHTING);
     }
 
@@ -101,5 +105,9 @@ public class BGImage{
         GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();
         texIndex++;
+    }
+
+    public void setAlpha(float alpha) {
+        this.alpha = alpha;
     }
 }

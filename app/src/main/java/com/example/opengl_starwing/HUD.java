@@ -17,11 +17,15 @@ public class HUD {
     private final BoostBar boostBar;
     private final CharacterPicture claptrap;
     private final GameOverScreen gameOverScreen;
+    private final TutorialScreen tutorialScreen;
+
+    private boolean showTutorial = true; // Initially display the tutorial
+    private int tutorialTimer = 300; // Display tutorial for 300 frames (~5 seconds at 60 FPS)
 
     public HUD(GL10 gl, Context context, float halfHeight, float halfWidth) {
         fontRenderer = new FontRenderer(gl, context);
         GUI_lmns = new ArrayList<>();
-        shieldBar = new ShieldBar(gl, context, -4.5f, -3.5f);
+        shieldBar = new ShieldBar(-4.5f, -3.5f);
         addLmn(shieldBar);
         boostBar = new BoostBar(2.8f, -3.5f);
         addLmn(boostBar);
@@ -31,6 +35,7 @@ public class HUD {
         addLmn(claptrap);
         gameOverScreen = new GameOverScreen(-5f, -3.95f, halfHeight, halfWidth);
         addLmn(gameOverScreen);
+        tutorialScreen = new TutorialScreen(gl, context, -5f, -4f, halfHeight, halfWidth);
     }
 
     public void addLmn(HUDDrawable lmn) {
@@ -39,12 +44,12 @@ public class HUD {
 
     public void draw(GL10 gl, Armwing armwing, Scene scene) {
         gl.glDisable(GL10.GL_LIGHTING);
+
         for (HUDDrawable lmn : GUI_lmns) {
             if (!(lmn instanceof CharacterPicture)) {
                 lmn.draw(gl);  // Calls the draw method of each element
             }
         }
-        drawTexts(gl);
 
         if (boostActive) {
             boostBar.useBoost();
@@ -63,6 +68,16 @@ public class HUD {
         }
 
         shieldBar.regainShield();
+
+        // Draw the tutorial screen if it is visible
+        if (showTutorial) {
+            tutorialScreen.draw(gl);
+            tutorialTimer--;
+            if (tutorialTimer <= 0) {
+                showTutorial = false; // Stop showing the tutorial
+            }
+        }
+        drawTexts(gl);
 
         gl.glEnable(GL10.GL_LIGHTING);
     }
@@ -94,6 +109,16 @@ public class HUD {
             fontRenderer.drawText(gl, "Shield", -4.6f, 3.1f, charSize);
             fontRenderer.drawText(gl, "Boost", 3.4f, 3.1f, charSize);
             fontRenderer.drawText(gl, "Cam View", 3.7f, -3.55f, charSize-0.1f);
+
+            if (showTutorial) {
+                fontRenderer.drawText(gl, "Slide to move", -1.4f, 2.5f, charSize);
+                fontRenderer.drawText(gl, "Tap to", 1.3f, 3.4f, charSize-0.05f);
+                fontRenderer.drawText(gl, "boost", 1.4f, 3.9f, charSize-0.05f);
+                fontRenderer.drawText(gl, "Tap to", 3.3f, -2.4f, charSize-0.05f);
+                fontRenderer.drawText(gl, "switch POV", 3f, -2.1f, charSize-0.05f);
+                fontRenderer.drawText(gl, "Tap anywhere", -4.5f, 0.6f, charSize-0.05f);
+                fontRenderer.drawText(gl, "to shoot", -4.2f, 0.9f, charSize-0.05f);
+            }
         }
     }
 

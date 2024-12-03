@@ -8,7 +8,7 @@ public class ShieldBar implements HUDDrawable {
     private final float x, y;
     private float shieldPercentage;    // Health percentage (0 to 1)
 
-    public ShieldBar(GL10 gl, Context context, float x, float y) {
+    public ShieldBar(float x, float y) {
         this.x = x;
         this.y = y;
         this.shieldPercentage = 1.0f; // Full shield by default

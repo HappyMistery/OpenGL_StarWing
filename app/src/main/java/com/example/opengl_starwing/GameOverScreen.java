@@ -23,11 +23,6 @@ public class GameOverScreen implements HUDDrawable {
         active = true;
     }
 
-    // Deactivate the Game Over screen
-    public void deactivate() {
-        active = false;
-    }
-
     // Check if the Game Over screen is active
     public boolean isActive() {
         return active;
