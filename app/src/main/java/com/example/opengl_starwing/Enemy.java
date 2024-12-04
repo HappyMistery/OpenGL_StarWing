@@ -73,15 +73,17 @@ public class Enemy implements SceneDrawable{
         targetY = (random.nextFloat() * 1.2f) - 0.2f; // Random Y target within a predefined range
     }
 
-    // Smoothly transition rotation (similar to Armwing's rotation logic)
+    // Smooth transition for rotation
     private void updateRotation() {
+        // Slowly increase the progress until it reaches 1
         rotationProgress = Math.min(1f, rotationProgress + ROTATION_SPEED);
-        float easedProgress = (float) Math.sin(rotationProgress * Math.PI / 2); // Easing
+        // Smooth easing function to make the transition smoother
+        float easedProgress = (float) Math.sin(rotationProgress * Math.PI / 2); // Sinusoidal easing
 
-        // Update yaw, roll, pitch based on movement direction
-        enemyYaw = targetEnemyYaw * easedProgress;
-        enemyRoll = targetEnemyRoll * easedProgress;
-        enemyPitch = targetEnemyPitch * easedProgress;
+        // Interpolate between current and target yaw, roll, pitch using easedProgress
+        enemyYaw = enemyYaw + (targetEnemyYaw - enemyYaw) * easedProgress;
+        enemyRoll = enemyRoll + (targetEnemyRoll - enemyRoll) * easedProgress;
+        enemyPitch = enemyPitch + (targetEnemyPitch - enemyPitch) * easedProgress;
     }
 
     public void draw(GL10 gl) {

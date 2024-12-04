@@ -127,7 +127,6 @@ public class MainActivity extends Activity {
         int newUiOptions = getWindow().getDecorView().getSystemUiVisibility();
 
         //Set the Flags for maximum Screen utilization
-        //We have Immersive mode available
         newUiOptions = newUiOptions | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
 
         newUiOptions = newUiOptions | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
@@ -136,7 +135,6 @@ public class MainActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN);
 
-        //All flags are a go, let it rip!!
         getWindow().getDecorView().setSystemUiVisibility(newUiOptions);
     }
 }
