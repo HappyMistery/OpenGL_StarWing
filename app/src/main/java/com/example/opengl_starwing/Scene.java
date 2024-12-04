@@ -21,7 +21,8 @@ public class Scene {
     private final int spawningNum = 1;    // Number to spawn building
     private final float resetThreshold; // Set a threshold for when to reset the Ground Points
     private final float projectileDespawnThreshold = -790f;
-    private int maxEnemies, enemiesSpawned;
+    private int maxEnemies, enemiesSpawned, enemiesDefeated;
+    private boolean waveCompleted = false;
     private long modeStartTime = 0;  // Time when the spawn mode started
 
     private final ObjectPool<Building> buildingPool;
@@ -118,13 +119,6 @@ public class Scene {
         long elapsedTime = (currentTime - lastModeSwitchTime) / 1000;
 
         // Print the elapsed time for the current spawn mode
-        System.out.println("Current spawn mode: " + currentSpawnMode + " | Elapsed time: " + elapsedTime + " seconds");
-
-        // Check if all enemies are defeated
-        if (currentSpawnMode == SpawnMode.ENEMIES && stObjs.isEmpty()) {
-            currentSpawnMode = SpawnMode.BUILDINGS_AND_PORTALS;
-            lastModeSwitchTime = currentTime;
-        }
 
         // Switch spawn modes based on time
         if (currentTime - lastModeSwitchTime > 20000) { // Mode duration (20 seconds)
@@ -132,6 +126,13 @@ public class Scene {
                 startEnemySpawnMode();
                 lastModeSwitchTime = currentTime;
             }
+        }
+
+        // Check if all enemies are defeated
+        waveCompleted = enemiesDefeated == maxEnemies;
+        if (currentSpawnMode == SpawnMode.ENEMIES && waveCompleted) {
+            currentSpawnMode = SpawnMode.BUILDINGS_AND_PORTALS;
+            lastModeSwitchTime = currentTime;
         }
 
         // Check if the time limit for killing enemies has passed
@@ -160,6 +161,8 @@ public class Scene {
         currentSpawnMode = SpawnMode.ENEMIES;
         maxEnemies = random.nextInt(8) + 3; // Spawn between 3 and 10 enemies each round
         enemiesSpawned = 0;  // Reset number of enemies spawned
+        enemiesDefeated = 0; // Reset number of enemies defeated
+        waveCompleted = false;
         modeStartTime = System.currentTimeMillis(); // Start the timer when spawning enemies
     }
 
@@ -242,6 +245,7 @@ public class Scene {
             enemy.updateScenePos(0f); // Reset the position for reuse
         }
         stObjs.clear(); // Clear the list of enemies
+        waveCompleted = true;
     }
 
 
@@ -292,6 +296,8 @@ public class Scene {
                     // Handle collision: Remove the projectile and the enemy
                     toRemoveProjectiles.add(projectile);
                     toRemoveEnemies.add(enemy);
+                    enemy.defeat(); // Mark the enemy as defeated
+                    enemiesDefeated++;
                     // Exit the loop to avoid multiple collisions with the same projectile
                     break;
                 }
