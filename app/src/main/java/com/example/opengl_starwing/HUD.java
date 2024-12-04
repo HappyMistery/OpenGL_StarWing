@@ -118,6 +118,19 @@ public class HUD {
                 fontRenderer.drawText(gl, "switch POV", 3f, -2.1f, charSize-0.05f);
                 fontRenderer.drawText(gl, "Tap anywhere", -4.5f, 0.6f, charSize-0.05f);
                 fontRenderer.drawText(gl, "to shoot", -4.2f, 0.9f, charSize-0.05f);
+
+                int secondsLeft = tutorialTimer / 60;  // Assuming 60 FPS
+                switch (secondsLeft) {
+                    case 0:
+                        fontRenderer.drawText(gl, "GO", -0.6f, 0.5f, charSize*2f);
+                        break;
+                    case 1:
+                        fontRenderer.drawText(gl, "SET", -0.75f, 0.5f, charSize*2f);
+                        break;
+                    case 2:
+                        fontRenderer.drawText(gl, "READY", -1.1f, 0.5f, charSize*2f);
+                        break;
+                }
             }
         }
     }

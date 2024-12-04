@@ -210,6 +210,6 @@ public class Armwing {
     }
 
     public void shootProjectile(Scene scene) {
-        scene.shootProjectile(armwingX, armwingY, armwingZ);
+        scene.shootProjectile(armwingX, armwingY-0.12f, armwingZ);
     }
 }

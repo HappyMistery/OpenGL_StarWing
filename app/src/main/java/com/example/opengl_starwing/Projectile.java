@@ -10,7 +10,7 @@ public class Projectile implements SceneDrawable{
     private float x, y, z, sceneZ;
     private float rotation = 0f;
     private final float ROTATION_SPEED = 3f;
-    private final float VELOCITY_Z = -5f; // Speed of movement along the z-axis
+    private final float VELOCITY_Z = -6f; // Speed of movement along the z-axis
 
     public Projectile(GL10 gl, Context context, float x, float y, float z) {
         projectile = new Object3D(context, R.raw.projectile);
@@ -61,9 +61,16 @@ public class Projectile implements SceneDrawable{
         z += VELOCITY_Z;
 
         gl.glPushMatrix();
-        gl.glTranslatef(x, y, z);
-        gl.glScalef(30f, 30f, 30f);
+        gl.glTranslatef(x-2f, y, z);
+        gl.glScalef(40f, 40f, 40f);
         gl.glRotatef(rotation % 360, 0, 0, 1);
+        projectile.draw(gl);
+        gl.glPopMatrix();
+
+        gl.glPushMatrix();
+        gl.glTranslatef(x+2.5f, y, z);
+        gl.glScalef(40f, 40f, 40f);
+        gl.glRotatef(-rotation % 360, 0, 0, 1);
         projectile.draw(gl);
         gl.glPopMatrix();
 
@@ -83,6 +90,16 @@ public class Projectile implements SceneDrawable{
     @Override
     public float getScenePos() {
         return sceneZ;
+    }
+
+    public float getX() {
+        // Normalize x to a range between 0 and 100
+        return (x - (326f)) / (475 - (326)) * 100;
+    }
+
+    public float getY() {
+        // Normalize y to a range between 0 and 100
+        return (y - (-11.2f)) / (31.7f - (-11.2f)) * 100;
     }
 
     public void powerOffLight() {
