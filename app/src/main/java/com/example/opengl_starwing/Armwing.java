@@ -2,15 +2,13 @@ package com.example.opengl_starwing;
 
 import android.content.Context;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.microedition.khronos.opengles.GL10;
 
 public class Armwing {
     // Variables for the armwing and its movement
     private final Object3D armwing;
     private final Object3D armwingShadow;
+    private float halfWidth, halfHeight;
     private float armwingX = 0f;
     private float armwingY = 0f;
     private float armwingZ = 0f;
@@ -30,7 +28,7 @@ public class Armwing {
     private final HUD hud;
     private final Camera camera;
 
-    public Armwing(GL10 gl, Context context, float camZ, HUD hud, Camera camera) {
+    public Armwing(GL10 gl, Context context, float camZ, HUD hud, Camera camera, float halfWidth, float halfHeight) {
         // Load Armwing's model
         armwing = new Object3D(context, R.raw.nau);
         armwingShadow = new Object3D(context, R.raw.nau);
@@ -41,6 +39,9 @@ public class Armwing {
 
         this.hud = hud;
         this.camera = camera;
+
+        this.halfWidth = halfWidth;
+        this.halfHeight = halfHeight;
     }
 
     public Camera getCam() {
@@ -91,7 +92,11 @@ public class Armwing {
         return armwingPitch;
     }
 
-    public void draw(GL10 gl, float halfHeight) {
+    public float getHalfHeight() {
+        return halfHeight;
+    }
+
+    public void draw(GL10 gl) {
         // Smoothly transition the Armwing's z position
         if (Math.abs(targetArmwingZ - armwingZ) > 0.01f) {
             armwingZ += (targetArmwingZ - armwingZ) * Z_TRANSITION_SPEED;
@@ -111,11 +116,6 @@ public class Armwing {
                 isRotating = false;
             }
         }
-
-        // Draw the Armwing
-        gl.glPushMatrix(); // Save the current transformation matrix
-        gl.glTranslatef(armwingX, armwingY, armwingZ);
-        gl.glPopMatrix(); // Restore the transformation matrix
 
         // Draw the Armwing
         gl.glPushMatrix(); // Save the current transformation matrix
@@ -146,7 +146,15 @@ public class Armwing {
         gl.glPopMatrix(); // Restore the transformation matrix
     }
 
-    public void move(float deltaX, float deltaY, float halfWidth, float halfHeight) {
+    public void setHalfHeight(float halfHeight) {
+        this.halfHeight = halfHeight;
+    }
+
+    public void setHalfWidth(float halfWidth) {
+        this.halfWidth = halfWidth;
+    }
+
+    public void move(float deltaX, float deltaY) {
         // Clamp the Armwing's position to keep it within the viewport
         armwingX = Math.max(-halfWidth, Math.min(armwingX + deltaX, halfWidth));
         armwingY = Math.max(-halfHeight, Math.min(armwingY + deltaY, halfHeight + 0.3f));

@@ -52,6 +52,17 @@ public class MainActivity extends Activity {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                // Check if user touches to switch camera view
+                if (x > (float) myGLRenderer.width / 8 * 7 && y < (float) myGLRenderer.height / 12) {
+                    myGLRenderer.switchCameraView();
+                    return true;
+                }
+                // Check if the touch is in the bottom-right part of the screen for boosting
+                if (x > (float) myGLRenderer.width / 4 * 3 && y > (float) myGLRenderer.height / 8 * 7) {
+                    myGLRenderer.boost();
+                    return true;
+                }
+                // If the touch doesn't fall under specific regions, it might be a tap to shoot
                 initialX = x;
                 initialY = y;
                 initialTime = System.currentTimeMillis();

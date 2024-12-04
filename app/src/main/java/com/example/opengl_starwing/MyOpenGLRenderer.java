@@ -37,7 +37,7 @@ public class MyOpenGLRenderer implements Renderer {
 		camera = new Camera();
 		bg = new BackGround(gl, context);
 		hud = new HUD(gl, context, halfHeight, halfWidth);
-		armwing = new Armwing(gl, context, camera.getCamZ(), hud, camera);
+		armwing = new Armwing(gl, context, camera.getCamZ(), hud, camera, halfWidth, halfHeight);
 
 		// Enable lightning in the scene
 		gl.glEnable(GL10.GL_LIGHTING);
@@ -77,7 +77,7 @@ public class MyOpenGLRenderer implements Renderer {
 
         camera.setCameraView(gl, armwing, halfWidth, halfHeight);
 		bg.draw(gl, light);
-		armwing.draw(gl, halfHeight);
+		armwing.draw(gl);
 		drawScene(gl);
 		bg.restoreBG(light);	// Disable Lightning after a certain time
 
@@ -146,7 +146,9 @@ public class MyOpenGLRenderer implements Renderer {
 	}
 
 	public void moveArmwing(float deltaX, float deltaY) {
-		armwing.move(deltaX, deltaY, halfWidth, halfHeight);
+		armwing.setHalfWidth(halfWidth);
+		armwing.setHalfHeight(halfHeight);
+		armwing.move(deltaX, deltaY);
 	}
 
 	public void stopArmwingAngle(){
