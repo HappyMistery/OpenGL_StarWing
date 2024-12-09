@@ -77,6 +77,7 @@ public class Scene {
 
     public void draw(GL10 gl) {
         checkArmwingProjectilesCollisions();
+        checkEnemyProjectilesCollisions();
 
         switchSpawnMode();
 
@@ -347,6 +348,44 @@ public class Scene {
         }
     }
 
+    private void checkEnemyProjectilesCollisions() {
+        List<EnemyProjectile> toRemoveProjectiles = new ArrayList<>();
+
+        // Map Armwing coordinates to the range [0, 100]
+        float armwingXMapped = ((armwing.getArmwingX() + 4) / 8) * 100;
+        float armwingYMapped = ((armwing.getArmwingY() + 1) / 2.3f) * 100;
+        float armwingZMapped = ((armwing.getArmwingZ() - 16.66f) / 1.0f) * 100;
+
+        for (EnemyProjectile projectile : enemyProjectiles) {
+            // Get the position of the projectile
+            float projX = projectile.getX();
+            float projY = projectile.getY();
+            float projZ = projectile.getScenePos();
+
+            // Set a threshold distance for collision
+            float collisionThreshold = 10.0f;
+
+            // If all three axes collide
+            if (Math.abs(projX - armwingXMapped) < collisionThreshold &&
+                    Math.abs(projY - armwingYMapped) < collisionThreshold &&
+                    Math.abs(projZ - armwingZMapped) < collisionThreshold) {
+                // Handle collision: Remove the projectile and lower armwing's shield
+                toRemoveProjectiles.add(projectile);
+                armwing.setShieldPercentage(armwing.getShieldPercentage() - 0.10f);
+                armwing.getCam().startShake(0.1f, 0.1f);
+                // Exit the loop to avoid multiple collisions with the same projectile
+                break;
+            }
+        }
+
+        // Remove collided projectiles
+        enemyProjectiles.removeAll(toRemoveProjectiles);
+
+        // Return objects to their respective pool
+        for (EnemyProjectile p : toRemoveProjectiles) {
+            enemyProjectilePool.returnObject(p);
+        }
+    }
 
     public void setSpeed(float speed) {
         this.speed = speed;

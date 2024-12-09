@@ -34,7 +34,7 @@ public class Armwing {
         armwingShadow = new Object3D(context, R.raw.nau);
         armwing.loadTexture(gl, context, R.drawable.paleta);
 
-        armwingZ = camZ - 2.35f;
+        armwingZ = camZ - 2.35f;    // 20 - 2.35 = 17.65
         targetArmwingZ = camZ - 2.35f;
 
         this.hud = hud;
@@ -70,6 +70,10 @@ public class Armwing {
 
     public float getArmwingY() {
         return armwingY;
+    }
+
+    public float getArmwingZ() {
+        return armwingZ;
     }
 
     public void setTargetArmwingZ(float targetZ) {
