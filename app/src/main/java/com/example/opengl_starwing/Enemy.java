@@ -8,8 +8,8 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class Enemy implements SceneDrawable{
     // Variables for the armwing and its movement
-    private final Object3D enemy;
-    private final Object3D enemyShadow;
+    private Object3D enemy;
+    private Object3D enemyShadow;
     private final float scaleFactor = 30f;
     private float x, y, z, sceneZ;
     private float targetX, targetY;
@@ -41,8 +41,17 @@ public class Enemy implements SceneDrawable{
 
     public Enemy(GL10 gl, Context context, float x, float y, float z) {
         // Load enemy's model
-        enemy = new Object3D(context, R.raw.enemy1);
-        enemyShadow = new Object3D(context, R.raw.enemy1);
+        Random random = new Random();
+        switch (random.nextInt(2)) {
+            case 0:
+                enemy = new Object3D(context, R.raw.enemy1);
+                enemyShadow = new Object3D(context, R.raw.enemy1);
+                break;
+            case 1:
+                enemy = new Object3D(context, R.raw.enemy2);
+                enemyShadow = new Object3D(context, R.raw.enemy2);
+                break;
+        }
         enemy.loadTexture(gl, context, R.drawable.paleta1);
 
         this.x = x;
@@ -223,7 +232,7 @@ public class Enemy implements SceneDrawable{
 
     public void shootProjectile(Scene scene) {
         Random random = new Random();
-        if ((int) (random.nextFloat()*100) == 28) {
+        if ((int) (random.nextFloat()*50) == 28) {
             scene.shootEnemyProjectile(x*scaleFactor, y*scaleFactor, z);
         }
     }

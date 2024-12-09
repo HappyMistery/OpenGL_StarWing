@@ -34,7 +34,7 @@ public class MyOpenGLRenderer implements Renderer {
 		// Set background color (black with slight transparency)
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
 
-		camera = new Camera();
+		camera = new Camera(gl);
 		bg = new BackGround(gl, context);
 		hud = new HUD(gl, context, halfHeight, halfWidth);
 		armwing = new Armwing(gl, context, camera.getCamZ(), hud, camera, halfWidth, halfHeight);

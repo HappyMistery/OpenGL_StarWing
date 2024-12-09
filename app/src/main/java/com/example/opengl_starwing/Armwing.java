@@ -48,6 +48,10 @@ public class Armwing {
         return camera;
     }
 
+    public HUD getHUD() {
+        return hud;
+    }
+
     public float getBoostPercentage() {
         return hud.getBoostPercentage();
     }

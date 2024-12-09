@@ -23,64 +23,97 @@ public class Camera {
     private float shakeDuration = 0.0f;
     private final Random random = new Random();
 
-    public Camera() {}
+    private boolean isTransitioningToEndGame = false;
+    private static final float TRANSITION_SPEED = 0.005f; // Adjust for desired smoothness
+
+    private final GL10 gl;
+
+    public Camera(GL10 gl) {
+        this.gl = gl;
+    }
 
     public float getCamZ() {
         return camZ;
     }
 
     public void setCameraView(GL10 gl, Armwing armwing, float halfWidth, float halfHeight) {
-        // Smoothly move the camera towards the Armwing's position, within a range
-        camX += ((armwing.getArmwingX() - camX) * CAMERA_SMOOTHNESS) / 2;
-        camY += ((armwing.getArmwingY() - camY) * CAMERA_SMOOTHNESS) / 2;
-        camX = Math.max(-halfWidth / 2, Math.min(camX, halfWidth / 2));
-        camY = Math.max(-halfHeight / 2, Math.min(camY, halfHeight / 2));
+        if (isTransitioningToEndGame) {
+            float targetCamX = 0.0f;
+            float targetCamY = 5.0f;
+            float targetCamZ = 100.0f;
 
-        // Smoothly adjust the Y-axis rotation based on Armwing's roll
-        float maxRotationAngle = 3.0f; // Maximum tilt angle in degrees
-        if (armwing.isRotating()) {
-            // Adjust the camera rotation based on the Armwing's roll for Y-axis
-            float targetRotationY = -armwing.getArmwingRoll() * (1 / maxRotationAngle);
-            cameraRotationY += (targetRotationY - cameraRotationY) * CAMERA_SMOOTHNESS;
+            // Smoothly interpolate camera position to the target position
+            camX += (targetCamX - camX) * TRANSITION_SPEED;
+            camY += (targetCamY - camY) * TRANSITION_SPEED;
+            // camZ is constant in normal view, so interpolate it for the end-game view
+            float currentCamZ = camZ;
+            currentCamZ += (targetCamZ - currentCamZ) * TRANSITION_SPEED;
 
-            // Adjust the camera rotation based on the Armwing's yaw for X-axis
-            float targetRotationX = Math.abs(armwing.getArmwingYaw()) * (1 / maxRotationAngle);
-            cameraRotationX += (targetRotationX - cameraRotationX) * CAMERA_SMOOTHNESS;
-            // (Pitch affects the X-axis of the camera)
-            float targetRotationPitch = -armwing.getArmwingPitch() * (1 / maxRotationAngle);
-            cameraRotationX += (targetRotationPitch - cameraRotationX) * CAMERA_SMOOTHNESS;
+            // Check if the camera has reached its target
+            if (Math.abs(targetCamX - camX) < 0.01f &&
+                    Math.abs(targetCamY - camY) < 0.01f &&
+                    Math.abs(targetCamZ - currentCamZ) < 0.01f) {
+                // Snap to final position and stop transitioning
+                camX = targetCamX;
+                camY = targetCamY;
+            }
+
+            GLU.gluLookAt(gl, camX, camY, currentCamZ,
+                    camX, 0, 0f,
+                    0f, 1f, 0f);
         } else {
-            // Smoothly reset both rotations to neutral
-            cameraRotationY += (0.0f - cameraRotationY) * CAMERA_SMOOTHNESS;
-            cameraRotationX += (0.0f - cameraRotationX) * CAMERA_SMOOTHNESS;
-        }
+            // Smoothly move the camera towards the Armwing's position, within a range
+            camX += ((armwing.getArmwingX() - camX) * CAMERA_SMOOTHNESS) / 2;
+            camY += ((armwing.getArmwingY() - camY) * CAMERA_SMOOTHNESS) / 2;
+            camX = Math.max(-halfWidth / 2, Math.min(camX, halfWidth / 2));
+            camY = Math.max(-halfHeight / 2, Math.min(camY, halfHeight / 2));
 
-        if (cameraView == 0) { // Normal camera view
-            gl.glMatrixMode(GL10.GL_MODELVIEW);
-            gl.glLoadIdentity();
+            // Smoothly adjust the Y-axis rotation based on Armwing's roll
+            float maxRotationAngle = 3.0f; // Maximum tilt angle in degrees
+            if (armwing.isRotating()) {
+                // Adjust the camera rotation based on the Armwing's roll for Y-axis
+                float targetRotationY = -armwing.getArmwingRoll() * (1 / maxRotationAngle);
+                cameraRotationY += (targetRotationY - cameraRotationY) * CAMERA_SMOOTHNESS;
 
-            gl.glRotatef(cameraRotationY, 0f, 1f, 0f); // Rotate the camera on the Y-axis
-            gl.glRotatef(cameraRotationX, 1f, 0f, 0f); // Rotate the camera on the X-axis (for yaw)
+                // Adjust the camera rotation based on the Armwing's yaw for X-axis
+                float targetRotationX = Math.abs(armwing.getArmwingYaw()) * (1 / maxRotationAngle);
+                cameraRotationX += (targetRotationX - cameraRotationX) * CAMERA_SMOOTHNESS;
+                // (Pitch affects the X-axis of the camera)
+                float targetRotationPitch = -armwing.getArmwingPitch() * (1 / maxRotationAngle);
+                cameraRotationX += (targetRotationPitch - cameraRotationX) * CAMERA_SMOOTHNESS;
+            } else {
+                // Smoothly reset both rotations to neutral
+                cameraRotationY += (0.0f - cameraRotationY) * CAMERA_SMOOTHNESS;
+                cameraRotationX += (0.0f - cameraRotationX) * CAMERA_SMOOTHNESS;
+            }
 
-            applyShake();
+            if (cameraView == 0) { // Normal camera view
+                gl.glMatrixMode(GL10.GL_MODELVIEW);
+                gl.glLoadIdentity();
 
-            // Set camera position using gluLookAt
-            GLU.gluLookAt(gl, camX, camY, camZ,
-                    camX, camY, 0f,
-                    0f, 1f, 0f);
-        } else if (cameraView == 1) { // Top camera view
-            GLU.gluLookAt(gl, 0, 9f, camZ + 5,
-                    0, 0, camZ - 10,
-                    0f, 0f, -1f);
-        } else { // Side camera view
-            GLU.gluLookAt(gl, 35.5f, 4f, 0.01f,
-                    0f, 0, 2f,
-                    0f, 1f, 0f);
+                gl.glRotatef(cameraRotationY, 0f, 1f, 0f); // Rotate the camera on the Y-axis
+                gl.glRotatef(cameraRotationX, 1f, 0f, 0f); // Rotate the camera on the X-axis (for yaw)
+
+                applyShake();
+
+                // Set camera position using gluLookAt
+                GLU.gluLookAt(gl, camX, camY, camZ,
+                        camX, camY, 0f,
+                        0f, 1f, 0f);
+            } else if (cameraView == 1) { // Top camera view
+                GLU.gluLookAt(gl, 0, 9f, camZ + 5,
+                        0, 0, camZ - 10,
+                        0f, 0f, -1f);
+            } else { // Side camera view
+                GLU.gluLookAt(gl, 35.5f, 4f, 0.01f,
+                        0f, 0, 2f,
+                        0f, 1f, 0f);
+            }
         }
     }
 
-    public void resetRotation() {
-        cameraRotationY = 0.0f;
+    public void setEndGameCamView() {
+        isTransitioningToEndGame = true;
     }
 
     public void switchPOV() {

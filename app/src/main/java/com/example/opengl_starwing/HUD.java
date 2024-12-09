@@ -11,7 +11,7 @@ public class HUD {
     private final List<HUDDrawable> GUI_lmns;
     private boolean boostActive = false;
     private final FontRenderer fontRenderer;
-    private boolean drawClaptrap = false;
+    private boolean gameEnded = false;
 
     private final ShieldBar shieldBar;
     private final BoostBar boostBar;
@@ -86,7 +86,7 @@ public class HUD {
         float charSize = 0.4f;
         float pictureX = -2.4f;
         float pictureY = -3.75f;
-        if(drawClaptrap) {
+        if(gameEnded) {
             claptrap.setPosition(pictureX, pictureY);
             claptrap.draw(gl);
             float textY = 2.8f;
@@ -170,5 +170,9 @@ public class HUD {
 
     public boolean gameOver() {
         return gameOverScreen.isActive();
+    }
+
+    public void gameEnded() {
+        gameEnded = true;
     }
 }

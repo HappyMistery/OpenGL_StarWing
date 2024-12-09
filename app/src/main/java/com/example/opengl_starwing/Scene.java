@@ -16,6 +16,7 @@ public class Scene {
     private final CopyOnWriteArrayList<ArmwingProjectile> armwingProjectiles; // Separate list for Armwing projectiles
     private final CopyOnWriteArrayList<EnemyProjectile> enemyProjectiles;   // Separate list for Enemy projectiles
     private final GroundPoints gp;
+    private Stairs stairs;
     private final float x, y, initialZ;
     private float z, newZ, armwingZ;
     private final Random random = new Random();
@@ -25,7 +26,9 @@ public class Scene {
     private final float projectileDespawnThreshold = -790f;
     private int maxEnemies, enemiesSpawned, enemiesDefeated;
     private boolean waveCompleted = false;
+    private float wavesCompleated = 0;
     private long modeStartTime = 0;  // Time when the spawn mode started
+    private boolean gameEnded = false; // Flag to indicate end of game
 
     private final ObjectPool<Building> buildingPool;
     private final ObjectPool<Portal> portalPool;
@@ -43,7 +46,12 @@ public class Scene {
     private SpawnMode currentSpawnMode = SpawnMode.BUILDINGS_AND_PORTALS;
     private long lastModeSwitchTime = System.currentTimeMillis(); // Track time for mode switching
 
+    private GL10 gl;
+    private Context context;
+
     public Scene(GL10 gl, Context context, float x, float y, float z, Armwing armwing) {
+        this.gl = gl;
+        this.context = context;
         dyObjs = new ArrayList<>(64);
         stObjs = new ArrayList<>(16);
         armwingProjectiles = new CopyOnWriteArrayList<ArmwingProjectile>();
@@ -60,8 +68,8 @@ public class Scene {
         // Initialize the ObjectPools for Building and Portal
         buildingPool = new ObjectPool<Building>(gl, context, Building::new, 40, 50); // Max 50 buildings in pool
         portalPool = new ObjectPool<Portal>(gl, context, Portal::new, 10, 10); // Max 10 portals in pool
-        armwingProjectilePool = new ObjectPool<>(gl, context, ArmwingProjectile::new, 256, 256);
-        enemyProjectilePool = new ObjectPool<>(gl, context, EnemyProjectile::new, 256, 256);
+        armwingProjectilePool = new ObjectPool<>(gl, context, ArmwingProjectile::new, 128, 128);
+        enemyProjectilePool = new ObjectPool<>(gl, context, EnemyProjectile::new, 128, 128);
         enemyPool = new ObjectPool<Enemy>(gl, context, Enemy::new, 16, 16); // Max 16 enemies in pool
 
         this.armwing = armwing;
@@ -76,6 +84,15 @@ public class Scene {
     }
 
     public void draw(GL10 gl) {
+        if (gameEnded) {
+            stairs.draw(gl);    // Only draw the stairs
+            gl.glPushMatrix();
+            gl.glTranslatef(x, y, z);
+            gp.draw(gl);
+            gl.glPopMatrix();
+            return; // Skip the rest of the drawing logic
+        }
+
         checkArmwingProjectilesCollisions();
         checkEnemyProjectilesCollisions();
 
@@ -124,6 +141,16 @@ public class Scene {
     }
 
     private void switchSpawnMode() {
+        if (wavesCompleated >= 3) {
+            stairs = new Stairs(gl, context);
+            gameEnded = true; // Set the game end flag after 3 waves
+            armwing.getCam().setEndGameCamView();
+            armwing.getHUD().gameEnded();
+            armwing.setTargetArmwingZ(-5f);
+            speed = 0; // Stop scene movement
+            return; // Skip spawning logic
+        }
+
         long currentTime = System.currentTimeMillis();
 
         // Calculate elapsed time in seconds
@@ -142,6 +169,7 @@ public class Scene {
         // Check if all enemies are defeated
         waveCompleted = enemiesDefeated == maxEnemies;
         if (currentSpawnMode == SpawnMode.ENEMIES && waveCompleted) {
+            wavesCompleated++;
             currentSpawnMode = SpawnMode.BUILDINGS_AND_PORTALS;
             lastModeSwitchTime = currentTime;
         }
@@ -169,6 +197,7 @@ public class Scene {
 
             if (enemyTimeLimitReached) {
                 despawnEnemies();  // Remove all enemies if the time is up
+                wavesCompleated++;
                 currentSpawnMode = SpawnMode.BUILDINGS_AND_PORTALS; // Switch back to buildings and portals mode
                 lastModeSwitchTime = currentTime;  // Reset mode switch time
             }
@@ -361,7 +390,7 @@ public class Scene {
         // Map Armwing coordinates to the range [0, 100]
         float armwingXMapped = ((armwing.getArmwingX() + 4) / 8) * 100;
         float armwingYMapped = ((armwing.getArmwingY() + 1) / 2.3f) * 100;
-        float armwingZMapped = ((armwing.getArmwingZ() - 16.66f) / 1.0f) * 100;
+        float armwingZMapped = ((armwing.getArmwingZ() - 16.66f)) * 100;
 
         for (EnemyProjectile projectile : enemyProjectiles) {
             // Get the position of the projectile

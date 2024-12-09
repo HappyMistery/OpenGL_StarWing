@@ -76,6 +76,6 @@ public class ShieldBar implements HUDDrawable {
     }
 
     public void regainShield() {
-        shieldPercentage = Math.min(shieldPercentage + 0.0005f, 1.0f);
+        shieldPercentage = Math.min(shieldPercentage + 0.0002f, 1.0f);
     }
 }
