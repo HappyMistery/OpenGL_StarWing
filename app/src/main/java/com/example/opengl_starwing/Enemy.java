@@ -10,6 +10,7 @@ public class Enemy implements SceneDrawable{
     // Variables for the armwing and its movement
     private final Object3D enemy;
     private final Object3D enemyShadow;
+    private final float scaleFactor = 30f;
     private float x, y, z, sceneZ;
     private float targetX, targetY;
     private float halfHeight;
@@ -26,6 +27,13 @@ public class Enemy implements SceneDrawable{
     private float rotationProgress = 0f;
     private static final float ROTATION_SPEED = 0.05f;
 
+    private boolean transitioning = true; // Flag to indicate if the enemy is transitioning
+    private float transitionProgress = 0f; // Progress of the transition (0 to 1)
+    private static final float TRANSITION_SPEED = 0.01f; // Speed of the transition
+    private float startX, startY; // Starting position for the transition
+
+    private Scene scene = null;
+
     public Enemy(GL10 gl, Context context, float x, float y, float z) {
         // Load enemy's model
         enemy = new Object3D(context, R.raw.enemy1);
@@ -39,12 +47,8 @@ public class Enemy implements SceneDrawable{
         setNewTargetY();
     }
 
-    public float getEnemyX() {
-        return x;
-    }
-
-    public float getEnemyY() {
-        return y;
+    public void setScene(Scene scene) {
+        this.scene = scene;
     }
 
     public void setHalfHeight(float halfHeight) {
@@ -57,6 +61,14 @@ public class Enemy implements SceneDrawable{
         this.z = z;
         sceneZ = offset;
         health = 100;
+
+        // Set the transition start position (e.g., outside the screen boundaries)
+        Random random = new Random();
+        startX = random.nextBoolean() ? -20f : 40f; // Start from either side of the screen
+        startY = (random.nextFloat() * 1.2f) - 0.2f; // Random Y within the range
+        transitioning = true;
+        transitionProgress = 0f;
+
         setNewTargetX();
         setNewTargetY();
     }
@@ -87,24 +99,44 @@ public class Enemy implements SceneDrawable{
     }
 
     public void draw(GL10 gl) {
-        z += VELOCITY_Z;
+        if (transitioning) {
+            // Increment transition progress
+            transitionProgress = Math.min(1f, transitionProgress + TRANSITION_SPEED);
 
-        // Move towards the target x
-        if (Math.abs(x - targetX) < MOVEMENT_VELOCITY) {
-            x = targetX; // Snap to target to avoid overshooting
-            setNewTargetX(); // Set a new target once the current one is reached
-            rotationProgress = 0;
-        } else {
-            x += (x < targetX ? MOVEMENT_VELOCITY : -MOVEMENT_VELOCITY); // Move towards the target
-        }
+            // Interpolate position from start to target using eased progress
+            float easedProgress = (float) Math.sin(transitionProgress * Math.PI / 2); // Smooth easing
+            x = startX + (targetX - startX) * easedProgress;
+            y = startY + (targetY - startY) * easedProgress;
 
-        // Move towards the target y
-        if (Math.abs(y - targetY) < MOVEMENT_VELOCITY) {
-            y = targetY; // Snap to target to avoid overshooting
-            setNewTargetY(); // Set a new target once the current one is reached
-            rotationProgress = 0;
+            // End transition when progress reaches 1
+            if (transitionProgress >= 1f) {
+                transitioning = false; // End the transition phase
+                x = targetX; // Snap to final target position
+                y = targetY;
+            }
         } else {
-            y += (y < targetY ? MOVEMENT_VELOCITY : -MOVEMENT_VELOCITY); // Move towards the target
+            // Existing movement logic
+            z += VELOCITY_Z;
+
+            // Horizontal movement
+            if (Math.abs(x - targetX) < MOVEMENT_VELOCITY) {
+                x = targetX;
+                setNewTargetX();
+                rotationProgress = 0;
+            } else {
+                x += (x < targetX ? MOVEMENT_VELOCITY : -MOVEMENT_VELOCITY);
+            }
+
+            // Vertical movement
+            if (Math.abs(y - targetY) < MOVEMENT_VELOCITY) {
+                y = targetY;
+                setNewTargetY();
+                rotationProgress = 0;
+            } else {
+                y += (y < targetY ? MOVEMENT_VELOCITY : -MOVEMENT_VELOCITY);
+            }
+
+            shootProjectile(scene);
         }
 
         // Update rotation based on movement direction
@@ -132,7 +164,6 @@ public class Enemy implements SceneDrawable{
 
         // Draw the Enemy
         gl.glPushMatrix(); // Save the current transformation matrix
-        float scaleFactor = 30f;
         gl.glTranslatef(x*scaleFactor, y*scaleFactor, z);
         gl.glScalef(scaleFactor, scaleFactor, scaleFactor);
         gl.glRotatef(enemyYaw, 0, 1, 0);  // Yaw rotation (around Y axis)
@@ -165,7 +196,11 @@ public class Enemy implements SceneDrawable{
     }
 
     public void shootProjectile(Scene scene) {
-        scene.shootProjectile(x, y, z);
+        Random random = new Random();
+        if ((int) (random.nextFloat()*100) == 28) {
+            System.out.println("Enemy shooting");
+            scene.shootEnemyProjectile(x*scaleFactor, y*scaleFactor, z);
+        }
     }
 
     public float getX() {

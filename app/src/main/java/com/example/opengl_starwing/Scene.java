@@ -13,13 +13,15 @@ public class Scene {
     private float speed = 1f;
     private final List<SceneDrawable> dyObjs;
     private final List<Enemy> stObjs;
-    private final CopyOnWriteArrayList<Projectile> projectiles; // Array safe for threading
+    private final CopyOnWriteArrayList<ArmwingProjectile> armwingProjectiles; // Separate list for Armwing projectiles
+    private final CopyOnWriteArrayList<EnemyProjectile> enemyProjectiles;   // Separate list for Enemy projectiles
     private final GroundPoints gp;
     private final float x, y, initialZ;
     private float z, newZ, armwingZ;
     private final Random random = new Random();
     private final int spawningNum = 1;    // Number to spawn building
     private final float resetThreshold; // Set a threshold for when to reset the Ground Points
+    float despawnThreshold = 650f;
     private final float projectileDespawnThreshold = -790f;
     private int maxEnemies, enemiesSpawned, enemiesDefeated;
     private boolean waveCompleted = false;
@@ -28,7 +30,8 @@ public class Scene {
     private final ObjectPool<Building> buildingPool;
     private final ObjectPool<Portal> portalPool;
     private final ObjectPool<Enemy> enemyPool;
-    private final ObjectPool<Projectile> projectilePool;
+    private final ObjectPool<ArmwingProjectile> armwingProjectilePool;
+    private final ObjectPool<EnemyProjectile> enemyProjectilePool;
 
     private final Armwing armwing;
 
@@ -43,7 +46,8 @@ public class Scene {
     public Scene(GL10 gl, Context context, float x, float y, float z, Armwing armwing) {
         dyObjs = new ArrayList<>(64);
         stObjs = new ArrayList<>(16);
-        projectiles = new CopyOnWriteArrayList<Projectile>();
+        armwingProjectiles = new CopyOnWriteArrayList<ArmwingProjectile>();
+        enemyProjectiles = new CopyOnWriteArrayList<EnemyProjectile>();
         this.x = -x;
         this.y = y;
         this.z = -z;
@@ -56,7 +60,8 @@ public class Scene {
         // Initialize the ObjectPools for Building and Portal
         buildingPool = new ObjectPool<Building>(gl, context, Building::new, 40, 50); // Max 50 buildings in pool
         portalPool = new ObjectPool<Portal>(gl, context, Portal::new, 10, 10); // Max 10 portals in pool
-        projectilePool = new ObjectPool<Projectile>(gl, context, Projectile::new, 128, 128); // Max 128 projectiles in pool
+        armwingProjectilePool = new ObjectPool<>(gl, context, ArmwingProjectile::new, 128, 128);
+        enemyProjectilePool = new ObjectPool<>(gl, context, EnemyProjectile::new, 128, 128);
         enemyPool = new ObjectPool<Enemy>(gl, context, Enemy::new, 16, 16); // Max 16 enemies in pool
 
         this.armwing = armwing;
@@ -71,7 +76,7 @@ public class Scene {
     }
 
     public void draw(GL10 gl) {
-        checkCollisions();
+        checkArmwingProjectilesCollisions();
 
         switchSpawnMode();
 
@@ -98,7 +103,12 @@ public class Scene {
             enemy.draw(gl);
         }
 
-        for (Projectile projectile : projectiles) {
+        for (ArmwingProjectile projectile : armwingProjectiles) {
+            projectile.updateScenePos(projectile.getScenePos());
+            projectile.draw(gl);
+        }
+
+        for (EnemyProjectile projectile : enemyProjectiles) {
             projectile.updateScenePos(projectile.getScenePos());
             projectile.draw(gl);
         }
@@ -200,7 +210,6 @@ public class Scene {
     private void despawnObjects() {
         List<SceneDrawable> toRemove = new ArrayList<>();
         for (SceneDrawable lmn : dyObjs) {
-            float despawnThreshold = 650f;
             if (lmn.getScenePos() > despawnThreshold) {
                 toRemove.add(lmn); // Add objects to remove to the list
                 // Return objects to their pools
@@ -226,12 +235,13 @@ public class Scene {
             // Randomize the position of the enemy
             float randomX = (random.nextFloat() * 4.7f) + 11f;
             float randomY = (random.nextFloat() * 1.2f) - 0.2f;
-            float randomZ = (random.nextFloat() * 100) + 100;
+            float enemyZ = 250;
             Enemy newEnemy = enemyPool.getObject();
             if (newEnemy != null) {
-                newEnemy.initialize(randomX, randomY, -this.armwingZ + -projectileDespawnThreshold -randomZ, -randomZ);
+                newEnemy.initialize(randomX, randomY, -this.armwingZ + -projectileDespawnThreshold -enemyZ, -enemyZ);
                 newEnemy.setHalfHeight(armwing.getHalfHeight());
                 newEnemy.setSpeed(speed);
+                newEnemy.setScene(this);
                 addStLmn(newEnemy);
                 enemiesSpawned++;
             }
@@ -249,31 +259,52 @@ public class Scene {
     }
 
 
-    public void shootProjectile(float armwingX, float armwingY, float armwingZ) {
-        Projectile projectile = projectilePool.getObject();
-        projectile.setPosition(armwingX, armwingY, -this.armwingZ + -projectileDespawnThreshold);
-        projectiles.add(projectile);
+    public void shootArmwingProjectile(float armwingX, float armwingY, float armwingZ) {
+        ArmwingProjectile projectile = armwingProjectilePool.getObject();
+        if (projectile != null) {
+            projectile.setPosition(armwingX, armwingY, -this.armwingZ + -projectileDespawnThreshold);
+            armwingProjectiles.add(projectile);
+        }
+    }
+
+    public void shootEnemyProjectile(float enemyX, float enemyY, float enemyZ) {
+        EnemyProjectile projectile = enemyProjectilePool.getObject();
+        if (projectile != null) {
+            projectile.setPosition(enemyX, enemyY, enemyZ);
+            enemyProjectiles.add(projectile);
+        }
     }
 
     public void deleteProjectiles() {
-        List<Projectile> toRemove = new ArrayList<>();
-        for (Projectile lmn : projectiles) {
+        List<ArmwingProjectile> toRemove1 = new ArrayList<>();
+        for (ArmwingProjectile lmn : armwingProjectiles) {
             if (lmn.getScenePos() < projectileDespawnThreshold) {
-                toRemove.add(lmn); // Add objects to remove to the list
+                toRemove1.add(lmn); // Add objects to remove to the list
                 // Return objects to their pools
-                projectilePool.returnObject(lmn);
+                armwingProjectilePool.returnObject(lmn);
                 lmn.updateScenePos(0f);
                 lmn.powerOffLight();
             }
         }
-        projectiles.removeAll(toRemove); // Remove objects past the threshold
+        armwingProjectiles.removeAll(toRemove1); // Remove objects past the threshold
+        List<EnemyProjectile> toRemove2 = new ArrayList<>();
+        for (EnemyProjectile lmn : enemyProjectiles) {
+            if (lmn.getScenePos() > despawnThreshold/4) {
+                toRemove2.add(lmn); // Add objects to remove to the list
+                // Return objects to their pools
+                enemyProjectilePool.returnObject(lmn);
+                lmn.updateScenePos(0f);
+                lmn.powerOffLight();
+            }
+        }
+        enemyProjectiles.removeAll(toRemove2); // Remove objects past the threshold
     }
 
-    private void checkCollisions() {
-        List<Projectile> toRemoveProjectiles = new ArrayList<>();
+    private void checkArmwingProjectilesCollisions() {
+        List<ArmwingProjectile> toRemoveProjectiles = new ArrayList<>();
         List<Enemy> toRemoveEnemies = new ArrayList<>();
 
-        for (Projectile projectile : projectiles) {
+        for (ArmwingProjectile projectile : armwingProjectiles) {
             // Get the position of the projectile
             float projX = projectile.getX();
             float projY = projectile.getY();
@@ -284,7 +315,6 @@ public class Scene {
                 float enemyX = enemy.getX();
                 float enemyY = enemy.getY();
                 float enemyZ = enemy.getScenePos();
-
 
                 // Set a threshold distance for collision
                 float collisionThreshold = 10.0f;
@@ -305,12 +335,12 @@ public class Scene {
         }
 
         // Remove the collided projectiles and enemies
-        projectiles.removeAll(toRemoveProjectiles);
+        armwingProjectiles.removeAll(toRemoveProjectiles);
         stObjs.removeAll(toRemoveEnemies);
 
         // Return objects to their respective pools
-        for (Projectile p : toRemoveProjectiles) {
-            projectilePool.returnObject(p);
+        for (ArmwingProjectile p : toRemoveProjectiles) {
+            armwingProjectilePool.returnObject(p);
         }
         for (Enemy e : toRemoveEnemies) {
             enemyPool.returnObject(e);

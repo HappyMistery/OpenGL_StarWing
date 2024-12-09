@@ -4,22 +4,26 @@ import android.content.Context;
 
 import javax.microedition.khronos.opengles.GL10;
 
-public class Projectile implements SceneDrawable{
-    private Object3D projectile = null;
-    private Light light;
-    private float x, y, z, sceneZ;
-    private float rotation = 0f;
-    private final float ROTATION_SPEED = 3f;
-    private final float VELOCITY_Z = -6f; // Speed of movement along the z-axis
+public class ArmwingProjectile implements SceneDrawable {
+    protected Object3D projectile = null;
+    protected Light light;
+    protected float x, y, z, sceneZ;
+    protected float rotation = 0f;
+    protected final float ROTATION_SPEED = 3f;
+    protected float VELOCITY_Z = -6f;
 
-    public Projectile(GL10 gl, Context context, float x, float y, float z) {
+    protected final Context context;
+    protected final GL10 gl;
+
+    public ArmwingProjectile(GL10 gl, Context context, float x, float y, float z) {
         projectile = new Object3D(context, R.raw.projectile);
         projectile.loadTexture(gl, context, R.drawable.paleta);
+        this.gl = gl;
+        this.context = context;
         this.x = x;
         this.y = y;
         this.z = z;
 
-        // Initialize the light for the projectile
         light = new Light(gl, GL10.GL_LIGHT2);
     }
 
@@ -29,7 +33,6 @@ public class Projectile implements SceneDrawable{
         float sceneXMin = 0f;
         float sceneXMax = 149f;
 
-        // Map Armwing x to scene x range
         float sceneXRange = sceneXMax - sceneXMin;
         float armwingXRange = armwingXMax - armwingXMin;
 
@@ -42,17 +45,16 @@ public class Projectile implements SceneDrawable{
         float sceneYMin = -9f;
         float sceneYMax = 34f;
 
-        // Map armwing y to scene y range
         float sceneYRange = sceneYMax - sceneYMin;
         float armwingYRange = armwingYMax - armwingYMin;
 
         return ((sceneYRange / armwingYRange) * (y - armwingYMin)) + sceneYMin;
     }
 
-    public void setPosition(float armwingX, float armwingY, float z) {
-        x = mapArmwingXToSceneX(armwingX) + 325;
-        y = mapArmwingYTosceneY(armwingY);
-        this.z = z;
+    public void setPosition(float projX, float projY, float projZ) {
+        x = mapArmwingXToSceneX(projX) + 325;
+        y = mapArmwingYTosceneY(projY);
+        z = projZ;
     }
 
     @Override
@@ -61,14 +63,14 @@ public class Projectile implements SceneDrawable{
         z += VELOCITY_Z;
 
         gl.glPushMatrix();
-        gl.glTranslatef(x-2f, y, z);
+        gl.glTranslatef(x - 2f, y, z);
         gl.glScalef(40f, 40f, 40f);
         gl.glRotatef(rotation % 360, 0, 0, 1);
         projectile.draw(gl);
         gl.glPopMatrix();
 
         gl.glPushMatrix();
-        gl.glTranslatef(x+2.5f, y, z);
+        gl.glTranslatef(x + 2.5f, y, z);
         gl.glScalef(40f, 40f, 40f);
         gl.glRotatef(-rotation % 360, 0, 0, 1);
         projectile.draw(gl);
@@ -84,7 +86,7 @@ public class Projectile implements SceneDrawable{
 
     @Override
     public void updateScenePos(float z) {
-        sceneZ = z+VELOCITY_Z;
+        sceneZ = z + VELOCITY_Z;
     }
 
     @Override
@@ -93,12 +95,10 @@ public class Projectile implements SceneDrawable{
     }
 
     public float getX() {
-        // Normalize x to a range between 0 and 100
         return (x - (326f)) / (475 - (326)) * 100;
     }
 
     public float getY() {
-        // Normalize y to a range between 0 and 100
         return (y - (-11.2f)) / (31.7f - (-11.2f)) * 100;
     }
 
