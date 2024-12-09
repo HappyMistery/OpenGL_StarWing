@@ -27,10 +27,15 @@ public class Enemy implements SceneDrawable{
     private float rotationProgress = 0f;
     private static final float ROTATION_SPEED = 0.05f;
 
-    private boolean transitioning = true; // Flag to indicate if the enemy is transitioning
     private float transitionProgress = 0f; // Progress of the transition (0 to 1)
     private static final float TRANSITION_SPEED = 0.01f; // Speed of the transition
     private float startX, startY; // Starting position for the transition
+
+    private static final int TRANSITION_NONE = 0;
+    private static final int TRANSITION_ENTER = 1;
+    private static final int TRANSITION_EXIT = 2;
+
+    private int transitionMode = TRANSITION_NONE;
 
     private Scene scene = null;
 
@@ -55,6 +60,29 @@ public class Enemy implements SceneDrawable{
         this.halfHeight = halfHeight;
     }
 
+    // Set the transition start position (e.g., outside the screen boundaries)
+    public void startTransition(int mode) {
+        Random random = new Random();
+        transitionMode = mode;
+        transitionProgress = 0f;
+
+        if (mode == TRANSITION_ENTER) {
+            // Entry: Start from off-screen
+            startX = random.nextBoolean() ? -20f : 40f; // Off-screen, left or right
+            startY = (random.nextFloat() * 1.2f) - 0.2f; // Random Y within range
+        } else if (mode == TRANSITION_EXIT) {
+            // Exit: Move off-screen
+            startX = x; // Current position
+            startY = y; // Current vertical position
+            targetX = random.nextBoolean() ? -20f : 40f; // Off-screen, left or right
+            targetY = y;
+        }
+    }
+
+    public int getTransitionMode() {
+        return transitionMode;
+    }
+
     public void initialize(float x, float y, float z, float offset) {
         this.x = x;
         this.y = y;
@@ -62,12 +90,7 @@ public class Enemy implements SceneDrawable{
         sceneZ = offset;
         health = 100;
 
-        // Set the transition start position (e.g., outside the screen boundaries)
-        Random random = new Random();
-        startX = random.nextBoolean() ? -20f : 40f; // Start from either side of the screen
-        startY = (random.nextFloat() * 1.2f) - 0.2f; // Random Y within the range
-        transitioning = true;
-        transitionProgress = 0f;
+        startTransition(TRANSITION_ENTER);
 
         setNewTargetX();
         setNewTargetY();
@@ -99,20 +122,23 @@ public class Enemy implements SceneDrawable{
     }
 
     public void draw(GL10 gl) {
-        if (transitioning) {
+        if (transitionMode != TRANSITION_NONE) {
             // Increment transition progress
-            transitionProgress = Math.min(1f, transitionProgress + TRANSITION_SPEED);
+            if(transitionMode == TRANSITION_ENTER)
+                transitionProgress = Math.min(1f, transitionProgress + TRANSITION_SPEED);
+            else
+                transitionProgress = Math.min(1f, transitionProgress + TRANSITION_SPEED/4);
 
-            // Interpolate position from start to target using eased progress
+            // Smooth easing function for interpolation
             float easedProgress = (float) Math.sin(transitionProgress * Math.PI / 2); // Smooth easing
+
+            // Interpolate position
             x = startX + (targetX - startX) * easedProgress;
             y = startY + (targetY - startY) * easedProgress;
 
             // End transition when progress reaches 1
             if (transitionProgress >= 1f) {
-                transitioning = false; // End the transition phase
-                x = targetX; // Snap to final target position
-                y = targetY;
+                transitionMode = TRANSITION_NONE; // End transition
             }
         } else {
             // Existing movement logic
@@ -198,7 +224,6 @@ public class Enemy implements SceneDrawable{
     public void shootProjectile(Scene scene) {
         Random random = new Random();
         if ((int) (random.nextFloat()*100) == 28) {
-            System.out.println("Enemy shooting");
             scene.shootEnemyProjectile(x*scaleFactor, y*scaleFactor, z);
         }
     }

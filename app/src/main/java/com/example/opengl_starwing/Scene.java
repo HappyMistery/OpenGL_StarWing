@@ -60,8 +60,8 @@ public class Scene {
         // Initialize the ObjectPools for Building and Portal
         buildingPool = new ObjectPool<Building>(gl, context, Building::new, 40, 50); // Max 50 buildings in pool
         portalPool = new ObjectPool<Portal>(gl, context, Portal::new, 10, 10); // Max 10 portals in pool
-        armwingProjectilePool = new ObjectPool<>(gl, context, ArmwingProjectile::new, 128, 128);
-        enemyProjectilePool = new ObjectPool<>(gl, context, EnemyProjectile::new, 128, 128);
+        armwingProjectilePool = new ObjectPool<>(gl, context, ArmwingProjectile::new, 256, 256);
+        enemyProjectilePool = new ObjectPool<>(gl, context, EnemyProjectile::new, 256, 256);
         enemyPool = new ObjectPool<Enemy>(gl, context, Enemy::new, 16, 16); // Max 16 enemies in pool
 
         this.armwing = armwing;
@@ -149,6 +149,13 @@ public class Scene {
         // Check if the time limit for killing enemies has passed
         int spawnTimeLimit = 30000; // 30 seconds
         boolean enemyTimeLimitReached = currentTime - modeStartTime >= spawnTimeLimit;
+
+        // Transition all enemies out 2 seconds before the time limit
+        if (currentSpawnMode == SpawnMode.ENEMIES && (spawnTimeLimit - (currentTime - modeStartTime)) <= 2000) {
+            for (Enemy enemy : stObjs) {
+                if (enemy.getTransitionMode() != 2) enemy.startTransition(2);    // Trigger transition to exit
+            }
+        }
 
         if (currentSpawnMode == SpawnMode.BUILDINGS_AND_PORTALS ||
                 (currentSpawnMode == SpawnMode.ENEMIES && spawnTimeLimit - (currentTime - modeStartTime) <= 4000)) {
