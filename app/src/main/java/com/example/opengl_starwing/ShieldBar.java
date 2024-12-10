@@ -2,16 +2,40 @@ package com.example.opengl_starwing;
 
 import android.content.Context;
 
+import java.nio.FloatBuffer;
+
 import javax.microedition.khronos.opengles.GL10;
 
 public class ShieldBar implements HUDDrawable {
     private final float x, y;
+    private final FloatBuffer topBorderBuffer;
+    private final FloatBuffer bottomBorderBuffer;
+    private final FloatBuffer leftBorderBuffer;
+    private final FloatBuffer rightBorderBuffer;
     private float shieldPercentage;    // Health percentage (0 to 1)
 
     public ShieldBar(float x, float y) {
         this.x = x;
         this.y = y;
-        this.shieldPercentage = 1.0f; // Full shield by default
+        this.shieldPercentage = 1.0f;
+
+        // Precompute static buffers for borders
+        float width = 1.75f, height = 0.3f, borderHeight = 0.05f, borderWidth = 0.05f;
+        this.topBorderBuffer = GLUtils.createFloatBuffer(new float[]{
+                x, y + height, 0, x + width, y + height, 0, x, y + height + borderHeight, 0, x + width, y + height + borderHeight, 0
+        });
+
+        this.bottomBorderBuffer = GLUtils.createFloatBuffer(new float[]{
+                x, y - borderHeight, 0, x + width, y - borderHeight, 0, x, y, 0, x + width, y, 0
+        });
+
+        this.leftBorderBuffer = GLUtils.createFloatBuffer(new float[]{
+                x, y, 0, x + borderWidth, y, 0, x, y + height, 0, x + borderWidth, y + height, 0
+        });
+
+        this.rightBorderBuffer = GLUtils.createFloatBuffer(new float[]{
+                x + width - borderWidth, y, 0, x + width, y, 0, x + width - borderWidth, y + height, 0, x + width, y + height, 0
+        });
     }
 
     // Method to set the shield percentage (0 to 1)
@@ -28,51 +52,22 @@ public class ShieldBar implements HUDDrawable {
     // Method to draw the shield bar
     @Override
     public void draw(GL10 gl) {
-        float width = 1.75f;
-        float height = 0.3f;
-        float borderHeight = 0.05f;
-        float borderWidth = 0.05f;
-        // Draw the shield portion (red) according to shieldPercentage
-        gl.glColor4f(1.0f, 0.0f, 0.0f, 1.0f); // Red color
-        drawRectangle(gl, x, y, width * shieldPercentage, height);
-        gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // White color
-        drawRectangle(gl, x, y+height, width, borderHeight);    // Top border
-        drawRectangle(gl, x, y-borderHeight, width, borderHeight);  // Bottom border
-        drawRectangle(gl, x, y, borderWidth, height);   // Right border
-        drawRectangle(gl, x+width-borderWidth, y, borderWidth, height); // Left border
-    }
+        float width = 1.75f, height = 0.3f;
 
-    // Helper method to draw a rectangle
-    private void drawRectangle(GL10 gl, float x, float y, float width, float height) {
-        gl.glPushMatrix(); // Save current matrix
-
-        // Move to the position of the shield bar
-        gl.glTranslatef(x, y, 0);
-
-        // Draw a rectangle using GL_TRIANGLE_STRIP
-        float[] vertices = {
-                0, 0, 0,  // Bottom-left
-                width, 0, 0,  // Bottom-right
-                0, height, 0,  // Top-left
-                width, height, 0   // Top-right
+        // Draw the shield portion (dynamic width)
+        float[] shieldVertices = {
+                x, y, 0, x + width * shieldPercentage, y, 0, x, y + height, 0, x + width * shieldPercentage, y + height, 0
         };
+        FloatBuffer shieldBuffer = GLUtils.createFloatBuffer(shieldVertices);
+        gl.glColor4f(1.0f, 0.0f, 0.0f, 1.0f); // Red color
+        GLUtils.drawRectangle(gl, shieldBuffer);
 
-        gl.glEnableClientState(GL10.GL_VERTEX_ARRAY); // Enable vertex arrays
-        gl.glVertexPointer(3, GL10.GL_FLOAT, 0, createFloatBuffer(vertices)); // Set vertex pointer
-        gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4); // Draw the rectangle
-        gl.glDisableClientState(GL10.GL_VERTEX_ARRAY); // Disable vertex arrays
-
-        gl.glPopMatrix(); // Restore matrix
-    }
-
-    // Helper method to create a FloatBuffer from a float array
-    private java.nio.FloatBuffer createFloatBuffer(float[] array) {
-        java.nio.ByteBuffer bb = java.nio.ByteBuffer.allocateDirect(array.length * 4);
-        bb.order(java.nio.ByteOrder.nativeOrder());
-        java.nio.FloatBuffer fb = bb.asFloatBuffer();
-        fb.put(array);
-        fb.position(0);
-        return fb;
+        // Draw borders
+        gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+        GLUtils.drawRectangle(gl, topBorderBuffer);
+        GLUtils.drawRectangle(gl, bottomBorderBuffer);
+        GLUtils.drawRectangle(gl, leftBorderBuffer);
+        GLUtils.drawRectangle(gl, rightBorderBuffer);
     }
 
     public void regainShield() {

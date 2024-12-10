@@ -11,18 +11,28 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 public class FontRenderer {
-
     private int textureId;
-    private int numColumns = 31; // Number of columns in the font texture
-    private int numRows = 3;    // Number of rows in the font texture
-    private float charWidth;    // Width of each character in texture coordinates
-    private float charHeight;   // Height of each character in texture coordinates
+    private int numColumns = 31;
+    private int numRows = 3;
+    private float charWidth;
+    private float charHeight;
+
+    private FloatBuffer vertexBuffer; // Preallocated buffer for vertices
+    private FloatBuffer texCoordBuffer; // Preallocated buffer for texture coordinates
 
     public FontRenderer(GL10 gl, Context context) {
         // Load texture and calculate character dimensions
         loadFontTexture(gl, context);
         charWidth = 1.0f / numColumns;
         charHeight = 1.0f / numRows;
+
+        // Allocate reusable buffers for a quad (4 vertices)
+        vertexBuffer = ByteBuffer.allocateDirect(4 * 2 * Float.BYTES) // 4 vertices * 2 coordinates * 4 bytes per float
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        texCoordBuffer = ByteBuffer.allocateDirect(4 * 2 * Float.BYTES) // Same size for texture coordinates
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
     }
 
     private void loadFontTexture(GL10 gl, Context context) {
@@ -41,17 +51,16 @@ public class FontRenderer {
     }
 
     public void drawText(GL10 gl, String text, float x, float y, float charSize) {
-        // Convert the input string to uppercase
         text = text.toUpperCase();
-        float[] vertices = new float[12]; // Quad vertices (2 triangles)
-        float[] texCoords = new float[8]; // Texture coordinates
         int textLength = text.length();
 
-        // Spacing and height scale factors
         float spacingFactor = 0.5f;
         float heightScaleFactor = 1.5f;
 
-        // Enable transparency
+        // Preallocate reusable arrays for vertices and texture coordinates
+        float[] vertices = new float[8]; // 4 vertices * 2 coordinates (x, y)
+        float[] texCoords = new float[8]; // 4 texture coordinates (u, v)
+
         gl.glEnable(GL10.GL_BLEND);
         gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 
@@ -65,85 +74,60 @@ public class FontRenderer {
             char c = text.charAt(i);
             int index;
             switch (c) {
-                case 45:
-                    index = 26;
-                    break;
-                case 46:
-                    index = 27;
-                    break;
-                case 39:
-                    index = 28;
-                    break;
-                case 63:
-                    index = 29;
-                    break;
-                case 33:
-                    index = 30;
-                    break;
-                default:
-                    index = c - 65; // Adjust offset to start from ASCII 'A' (65)
+                case 45: index = 26; break;
+                case 46: index = 27; break;
+                case 39: index = 28; break;
+                case 63: index = 29; break;
+                case 33: index = 30; break;
+                default: index = c - 65;
             }
 
-            // If the character is outside the range of the texture, skip rendering
-            if (index < 0 || index >= numColumns * numRows) {
-                continue;
-            }
+            if (index < 0 || index >= numColumns * numRows) continue;
 
-            // Calculate texture coordinates
             float u = (index % numColumns) * charWidth;
             float v = (index / numColumns) * charHeight;
 
-            // Quad vertices
             float x0 = x + i * charSize * spacingFactor;
             float x1 = x0 + charSize;
             float y0 = y;
             float y1 = y - charSize * heightScaleFactor;
 
-            vertices = new float[]{
-                    x0, y0,  // Top-left
-                    x0, y1,  // Bottom-left
-                    x1, y1,  // Bottom-right
-                    x1, y0   // Top-right
-            };
+            // Update vertices array
+            vertices[0] = x0; vertices[1] = y0; // Top-left
+            vertices[2] = x0; vertices[3] = y1; // Bottom-left
+            vertices[4] = x1; vertices[5] = y1; // Bottom-right
+            vertices[6] = x1; vertices[7] = y0; // Top-right
 
-            // Texture coordinates
-            texCoords = new float[]{
-                    u, v + charHeight,   // Top-left
-                    u, v,               // Bottom-left
-                    u + charWidth, v,   // Bottom-right
-                    u + charWidth, v + charHeight // Top-right
-            };
+            // Update texture coordinates array
+            texCoords[0] = u; texCoords[1] = v + charHeight; // Top-left
+            texCoords[2] = u; texCoords[3] = v;             // Bottom-left
+            texCoords[4] = u + charWidth; texCoords[5] = v; // Bottom-right
+            texCoords[6] = u + charWidth; texCoords[7] = v + charHeight; // Top-right
 
-            // Enable vertex arrays
+            // Update buffers
+            vertexBuffer.clear();
+            vertexBuffer.put(vertices).position(0);
+
+            texCoordBuffer.clear();
+            texCoordBuffer.put(texCoords).position(0);
+
+            // Draw the quad
             gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
             gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
 
-            // Pass vertex and texture coordinate arrays
-            gl.glVertexPointer(2, GL10.GL_FLOAT, 0, createFloatBuffer(vertices));
-            gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, createFloatBuffer(texCoords));
+            gl.glVertexPointer(2, GL10.GL_FLOAT, 0, vertexBuffer);
+            gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, texCoordBuffer);
 
-            // Draw the quad
             gl.glDrawArrays(GL10.GL_TRIANGLE_FAN, 0, 4);
 
-            // Disable arrays
             gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
             gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);
         }
 
         gl.glPopMatrix();
-        gl.glDisable(GL10.GL_BLEND); // Disable transparency
+        gl.glDisable(GL10.GL_BLEND);
         gl.glDisable(GL10.GL_TEXTURE_2D);
     }
 
-    // Helper method to create a FloatBuffer
-    private java.nio.FloatBuffer createFloatBuffer(float[] data) {
-        ByteBuffer buffer = ByteBuffer.allocateDirect(data.length * 4); // 4 bytes per float
-        buffer.order(ByteOrder.nativeOrder());
-        FloatBuffer floatBuffer = buffer.asFloatBuffer();
-        floatBuffer.put(data);
-        floatBuffer.position(0);
-        return floatBuffer;
-    }
-
-
 }
+

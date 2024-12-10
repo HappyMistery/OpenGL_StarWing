@@ -17,23 +17,22 @@ public class Stairs  implements SceneDrawable{
         light2 = new Light(gl, GL10.GL_LIGHT5);
 
         // Configure light1
-        light1.enable();
+        light1.setPosition(new float[]{50f, 20f, 200f, 1f});
         light1.setDiffuseColor(new float[]{0.5f, 0f, 0f, 1f});
         light1.setSpecularColor(new float[]{0.5f, 0f, 0f, 1f});
         light1.setAttenuation(1f, 0.1f, 0.02f);
+        light1.enable();
 
         // Configure light2
-        light2.enable();
+        light2.setPosition(new float[]{-50f, 20f, 200f, 1f});
         light2.setDiffuseColor(new float[]{0f, 0f, 0.5f, 1f});
         light2.setSpecularColor(new float[]{0f, 0f, 0.5f, 1f});
         light2.setAttenuation(1f, 0.1f, 0.02f);
+        light2.enable();
     }
 
     @Override
     public void draw(GL10 gl) {
-        light1.setPosition(new float[]{50f, 20f, 200f, 1f});
-        light2.setPosition(new float[]{-50f, 20f, 200f, 1f});
-
         gl.glPushMatrix();
         gl.glScalef(25f, 25f, 25f);
         gl.glTranslatef(0, 1.9f, 4);

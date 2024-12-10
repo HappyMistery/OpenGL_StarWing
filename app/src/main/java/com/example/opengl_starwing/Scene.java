@@ -17,6 +17,7 @@ public class Scene {
     private final CopyOnWriteArrayList<EnemyProjectile> enemyProjectiles;   // Separate list for Enemy projectiles
     private final GroundPoints gp;
     private Stairs stairs;
+    private Boss boss = null;
     private final float x, y, initialZ;
     private float z, newZ, armwingZ;
     private final Random random = new Random();
@@ -26,7 +27,7 @@ public class Scene {
     private final float projectileDespawnThreshold = -790f;
     private int maxEnemies, enemiesSpawned, enemiesDefeated;
     private boolean waveCompleted = false;
-    private float wavesCompleated = 0;
+    private float wavesCompleted = 0;
     private long modeStartTime = 0;  // Time when the spawn mode started
     private boolean gameEnded = false; // Flag to indicate end of game
 
@@ -141,9 +142,20 @@ public class Scene {
     }
 
     private void switchSpawnMode() {
-        if (wavesCompleated >= 3) {
+        if (wavesCompleted >= 3) {
+            if (boss == null) {
+                boss = new Boss(gl, context);
+                boss.setScene(this);
+                boss.setHUD(armwing.getHUD());
+                boss.setHalfHeight(armwing.getHalfHeight());
+                boss.initialize(0, 0, -this.armwingZ + -projectileDespawnThreshold -250, -250);
+            } else if (boss.isDefeated()) {
+                gameEnded = true;
+            }
+            return;
+        }
+        if (gameEnded) {
             stairs = new Stairs(gl, context);
-            gameEnded = true; // Set the game end flag after 3 waves
             armwing.getCam().setEndGameCamView();
             armwing.getHUD().gameEnded();
             armwing.setTargetArmwingZ(-5f);
@@ -169,7 +181,7 @@ public class Scene {
         // Check if all enemies are defeated
         waveCompleted = enemiesDefeated == maxEnemies;
         if (currentSpawnMode == SpawnMode.ENEMIES && waveCompleted) {
-            wavesCompleated++;
+            wavesCompleted++;
             currentSpawnMode = SpawnMode.BUILDINGS_AND_PORTALS;
             lastModeSwitchTime = currentTime;
         }
@@ -197,7 +209,7 @@ public class Scene {
 
             if (enemyTimeLimitReached) {
                 despawnEnemies();  // Remove all enemies if the time is up
-                wavesCompleated++;
+                wavesCompleted++;
                 currentSpawnMode = SpawnMode.BUILDINGS_AND_PORTALS; // Switch back to buildings and portals mode
                 lastModeSwitchTime = currentTime;  // Reset mode switch time
             }
@@ -304,7 +316,7 @@ public class Scene {
         }
     }
 
-    public void shootEnemyProjectile(float enemyX, float enemyY, float enemyZ) {
+    public void shootEnemyProjectile(float enemyX, float enemyY, float enemyZ, boolean isBoss) {
         EnemyProjectile projectile = enemyProjectilePool.getObject();
         if (projectile != null) {
             projectile.setPosition(enemyX, enemyY, enemyZ);

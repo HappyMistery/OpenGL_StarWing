@@ -233,7 +233,7 @@ public class Enemy implements SceneDrawable{
     public void shootProjectile(Scene scene) {
         Random random = new Random();
         if ((int) (random.nextFloat()*50) == 28) {
-            scene.shootEnemyProjectile(x*scaleFactor, y*scaleFactor, z);
+            scene.shootEnemyProjectile(x*scaleFactor, y*scaleFactor, z, false);
         }
     }
 
