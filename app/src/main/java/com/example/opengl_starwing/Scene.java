@@ -90,16 +90,6 @@ public class Scene {
     }
 
     public void draw(GL10 gl) {
-        if (boss.isActivated()) {
-            boss.draw(gl);
-            z += speed;
-            armwingZ += speed;
-            gl.glPushMatrix();
-            gl.glTranslatef(x, y, z);
-            gp.checkAndResetPosition(z, resetThreshold, speed, initialZ);
-            gp.draw(gl);
-            gl.glPopMatrix();
-        }
         if (gameEnded) {
             stairs.draw(gl);    // Only draw the stairs
             gl.glPushMatrix();
@@ -108,6 +98,11 @@ public class Scene {
             gl.glPopMatrix();
             return; // Skip the rest of the drawing logic
         }
+
+        if (boss.isActivated()) {
+            boss.draw(gl);
+        }
+
         switchSpawnMode();
 
         checkArmwingProjectilesCollisions();
@@ -156,21 +151,18 @@ public class Scene {
     }
 
     private void switchSpawnMode() {
-        if (wavesCompleted >= 1) {
+        if (wavesCompleted >= 3) {
             if (!boss.isActivated()) {
                 boss.activate();
+                armwing.getHUD().bossPhase();
             } else if (boss.isDefeated()) {
                 gameEnded = true;
+                stairs = new Stairs(gl, context);
+                armwing.getCam().setEndGameCamView();
+                armwing.setTargetArmwingZ(-5f);
+                speed = 0; // Stop scene movement
             }
             return;
-        }
-        if (gameEnded) {
-            stairs = new Stairs(gl, context);
-            armwing.getCam().setEndGameCamView();
-            armwing.getHUD().gameEnded();
-            armwing.setTargetArmwingZ(-5f);
-            speed = 0; // Stop scene movement
-            return; // Skip spawning logic
         }
 
         long currentTime = System.currentTimeMillis();
@@ -243,6 +235,7 @@ public class Scene {
             float randomX = random.nextFloat() * 53; // Range: 0 to 53
             Building newBuilding = buildingPool.getObject();
             if (newBuilding != null) {
+                newBuilding.updateScenePos(0f);
                 newBuilding.setPosition(randomX, -newZ + 30);
                 newBuilding.setArmwing(armwing);
                 addDyLmn(newBuilding);
@@ -259,6 +252,7 @@ public class Scene {
             float randomY = (random.nextFloat() * 2) + 0.2f; // Range: 0.2 to 2.2
             Portal newPortal = portalPool.getObject();
             if (newPortal != null) {
+                newPortal.updateScenePos(0f);
                 newPortal.setPosition(randomX, randomY, -newZ + 30);
                 newPortal.setArmwing(armwing);
                 addDyLmn(newPortal);
@@ -277,7 +271,6 @@ public class Scene {
                 } else if (lmn instanceof Portal) {
                     portalPool.returnObject((Portal) lmn);
                 }
-                lmn.updateScenePos(0f);
             }
         }
         dyObjs.removeAll(toRemove); // Remove objects past the threshold
@@ -294,9 +287,10 @@ public class Scene {
             // Randomize the position of the enemy
             float randomX = (random.nextFloat() * 4.7f) + 11f;
             float randomY = (random.nextFloat() * 1.2f) - 0.2f;
-            float enemyZ = 250 * Math.min(speed, 1.17f);
+            float enemyZ = 250 * Math.min(speed, 1.15f);
             Enemy newEnemy = enemyPool.getObject();
             if (newEnemy != null) {
+                newEnemy.updateScenePos(0f); // Reset the position for reuse
                 newEnemy.initialize(randomX, randomY, -this.armwingZ + -projectileDespawnThreshold -enemyZ, -enemyZ);
                 newEnemy.setHalfHeight(armwing.getHalfHeight());
                 newEnemy.setScene(this);
@@ -310,7 +304,6 @@ public class Scene {
         for (Enemy enemy : stObjs) {
             enemy.defeat(); // Mark the enemy as defeated
             enemyPool.returnObject(enemy); // Return the enemy to the object pool
-            enemy.updateScenePos(0f); // Reset the position for reuse
         }
         stObjs.clear(); // Clear the list of enemies
         waveCompleted = true;
@@ -320,6 +313,7 @@ public class Scene {
     public void shootArmwingProjectile(float armwingX, float armwingY) {
         ArmwingProjectile projectile = armwingProjectilePool.getObject();
         if (projectile != null) {
+            projectile.updateScenePos(0);
             projectile.setPosition(armwingX, armwingY, -this.armwingZ + -projectileDespawnThreshold);
             armwingProjectiles.add(projectile);
         }
@@ -327,8 +321,9 @@ public class Scene {
 
     public void shootEnemyProjectile(float enemyX, float enemyY, float enemyZ, boolean isBoss) {
         EnemyProjectile projectile = enemyProjectilePool.getObject();
-        if (isBoss) enemyZ = -this.armwingZ + -projectileDespawnThreshold - 200;
+        if (isBoss) enemyZ = -this.armwingZ + -projectileDespawnThreshold - 150;
         if (projectile != null) {
+            projectile.updateScenePos(0);
             projectile.setPosition(enemyX, enemyY, enemyZ);
             if (isBoss) projectile.markAsBoss();
             enemyProjectiles.add(projectile);
@@ -342,7 +337,6 @@ public class Scene {
                 toRemove1.add(lmn); // Add objects to remove to the list
                 // Return objects to their pools
                 armwingProjectilePool.returnObject(lmn);
-                lmn.updateScenePos(0f);
                 lmn.powerOffLight();
             }
         }
@@ -353,7 +347,6 @@ public class Scene {
                 toRemove2.add(lmn); // Add objects to remove to the list
                 // Return objects to their pools
                 enemyProjectilePool.returnObject(lmn);
-                lmn.updateScenePos(0f);
                 lmn.powerOffLight();
             }
         }
@@ -370,13 +363,34 @@ public class Scene {
             float projY = projectile.getY();
             float projZ = projectile.getScenePos();
 
+            if (boss.isActivated()) {
+                float bossX = boss.getX();
+                float bossZ = -200f;
+
+                float collisionThreshold = 30f;
+
+                System.out.println("BOSS: " + bossX + " " + bossZ);
+                System.out.println("PROJECTILE: " + projX + " " + projZ);
+
+                // If all three axes collide
+                if (Math.abs(projX - bossX) < collisionThreshold &&
+                        Math.abs(projZ - bossZ) < collisionThreshold) {
+                    toRemoveProjectiles.add(projectile);
+                    // Return objects to their pools
+                    armwingProjectilePool.returnObject(projectile);
+                    boss.setShieldPercentage(boss.getShieldPercentage() - 0.05f);
+                    break;
+                }
+                return;
+            }
+
+            float collisionThreshold = 10f;
+
             for (Enemy enemy : stObjs) {
                 // Get the position of the enemy
                 float enemyX = enemy.getX();
                 float enemyY = enemy.getY();
                 float enemyZ = enemy.getScenePos();
-
-                float collisionThreshold = 10f;
 
                 // If all three axes collide
                 if (Math.abs(projX - enemyX) < collisionThreshold &&
@@ -400,6 +414,7 @@ public class Scene {
         // Return objects to their respective pools
         for (ArmwingProjectile p : toRemoveProjectiles) {
             armwingProjectilePool.returnObject(p);
+            p.powerOffLight();
         }
         for (Enemy e : toRemoveEnemies) {
             enemyPool.returnObject(e);
@@ -442,6 +457,7 @@ public class Scene {
         // Return objects to their respective pool
         for (EnemyProjectile p : toRemoveProjectiles) {
             enemyProjectilePool.returnObject(p);
+            p.powerOffLight();
         }
     }
 

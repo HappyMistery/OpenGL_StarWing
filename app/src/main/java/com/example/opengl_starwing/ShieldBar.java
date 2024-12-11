@@ -8,19 +8,29 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class ShieldBar implements HUDDrawable {
     private final float x, y;
+    float width = 1.75f, height = 0.3f;
     private final FloatBuffer topBorderBuffer;
     private final FloatBuffer bottomBorderBuffer;
     private final FloatBuffer leftBorderBuffer;
     private final FloatBuffer rightBorderBuffer;
     private float shieldPercentage;    // Health percentage (0 to 1)
 
-    public ShieldBar(float x, float y) {
+    public ShieldBar(float x, float y, float width, float height) {
         this.x = x;
         this.y = y;
         this.shieldPercentage = 1.0f;
 
         // Precompute static buffers for borders
-        float width = 1.75f, height = 0.3f, borderHeight = 0.05f, borderWidth = 0.05f;
+        if(width != 0) {
+            this.width = width;
+        }
+        if(height != 0) {
+            this.height = height;
+        }
+        width = this.width;
+        height = this.height;
+        float borderHeight = 0.05f;
+        float borderWidth = 0.05f;
         this.topBorderBuffer = GLUtils.createFloatBuffer(new float[]{
                 x, y + height, 0, x + width, y + height, 0, x, y + height + borderHeight, 0, x + width, y + height + borderHeight, 0
         });
@@ -52,7 +62,6 @@ public class ShieldBar implements HUDDrawable {
     // Method to draw the shield bar
     @Override
     public void draw(GL10 gl) {
-        float width = 1.75f, height = 0.3f;
 
         // Draw the shield portion (dynamic width)
         float[] shieldVertices = {

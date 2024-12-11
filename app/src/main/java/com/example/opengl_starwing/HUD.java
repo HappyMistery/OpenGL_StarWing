@@ -18,14 +18,16 @@ public class HUD {
     private final CharacterPicture claptrap;
     private final GameOverScreen gameOverScreen;
     private final TutorialScreen tutorialScreen;
+    private final ShieldBar bossShieldBar;
 
     private boolean showTutorial = true; // Initially display the tutorial
     private int tutorialTimer = 300; // Display tutorial for 300 frames (~5 seconds at 60 FPS)
+    private boolean bossPhase = false;
 
     public HUD(GL10 gl, Context context, float halfHeight, float halfWidth) {
         fontRenderer = new FontRenderer(gl, context);
         GUI_lmns = new ArrayList<>();
-        shieldBar = new ShieldBar(-4.5f, -3.5f);
+        shieldBar = new ShieldBar(-4.5f, -3.5f, 0, 0);
         addLmn(shieldBar);
         boostBar = new BoostBar(2.8f, -3.5f);
         addLmn(boostBar);
@@ -36,6 +38,7 @@ public class HUD {
         gameOverScreen = new GameOverScreen(-5f, -3.95f, halfHeight, halfWidth);
         addLmn(gameOverScreen);
         tutorialScreen = new TutorialScreen(gl, context, -5f, -4f, halfHeight, halfWidth);
+        bossShieldBar = new ShieldBar(-2.5f, 3.4f, 5f, 0.4f);
     }
 
     public void addLmn(HUDDrawable lmn) {
@@ -44,6 +47,10 @@ public class HUD {
 
     public void draw(GL10 gl, Armwing armwing, Scene scene) {
         gl.glDisable(GL10.GL_LIGHTING);
+
+        if (bossPhase) {
+            bossShieldBar.draw(gl);
+        }
 
         for (HUDDrawable lmn : GUI_lmns) {
             if (!(lmn instanceof CharacterPicture)) {
@@ -60,6 +67,11 @@ public class HUD {
         if (boostActive && getBoostPercentage() <= 0.01) {
             stopBoost();
             boost(armwing, scene);
+        }
+
+        // Check for Game end condition
+        if (getBossShieldPercentage() <= 0.0f) {
+            gameEnded = true;
         }
 
         // Check for Game Over condition
@@ -109,6 +121,8 @@ public class HUD {
             fontRenderer.drawText(gl, "Shield", -4.6f, 3.1f, charSize);
             fontRenderer.drawText(gl, "Boost", 3.4f, 3.1f, charSize);
             fontRenderer.drawText(gl, "Cam View", 3.7f, -3.55f, charSize-0.1f);
+
+            if (bossPhase) fontRenderer.drawText(gl, "Winton, Destroyer of Worlds", -2f, -3.375f, charSize-0.1f);
 
             if (showTutorial) {
                 fontRenderer.drawText(gl, "Slide to move", -1.4f, 2.5f, charSize);
@@ -168,11 +182,19 @@ public class HUD {
         shieldBar.setShieldPercentage(f);
     }
 
+    public float getBossShieldPercentage() {
+        return bossShieldBar.getShieldPercentage();
+    }
+
+    public void setBossShieldPercentage(float f) {
+        bossShieldBar.setShieldPercentage(f);
+    }
+
     public boolean gameOver() {
         return gameOverScreen.isActive();
     }
 
-    public void gameEnded() {
-        gameEnded = true;
+    public void bossPhase() {
+        bossPhase = true;
     }
 }

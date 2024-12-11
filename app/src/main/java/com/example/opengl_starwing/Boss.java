@@ -12,7 +12,6 @@ public class Boss implements SceneDrawable {
     private boolean isActivated = false;
     private final float scaleFactor = 30f;
     private float x, y, z, sceneZ, startZ, startY;
-    private float health = 1000;
 
     private float targetZ, targetY, targetX; // Target for horizontal random movement
     private float transitionProgress = 0f; // Progress of the transition (0 to 1)
@@ -53,7 +52,6 @@ public class Boss implements SceneDrawable {
         startZ = this.z;
         this.targetZ = z; // Target Z position
         sceneZ = z;
-        health = 1000;
         transitionProgress = 0f;
         loweringProgress = 0f;
         isSlidingIn = true;
@@ -138,26 +136,21 @@ public class Boss implements SceneDrawable {
 
     public void shootProjectile(Scene scene) {
         Random random = new Random();
-        System.out.println("SceneZ = " + sceneZ);
         float offset = 200;
-        if (random.nextInt(20) == 1) {
+        if (random.nextInt(50) == 1) {
             scene.shootEnemyProjectile(x*scaleFactor+400, y*scaleFactor-9, sceneZ, true);
         }
-        if (random.nextInt(20) == 1) {
+        if (random.nextInt(50) == 1) {
             scene.shootEnemyProjectile(x*scaleFactor+400, y*scaleFactor+5, sceneZ, true);
         }
-        if (random.nextInt(20) == 1) {
+        if (random.nextInt(50) == 1) {
             scene.shootEnemyProjectile(x*scaleFactor+390, y*scaleFactor+15, sceneZ, true);
             scene.shootEnemyProjectile(x*scaleFactor+410, y*scaleFactor+15, sceneZ, true);
         }
     }
 
     public float getX() {
-        return (x - 11) / (15.7f - 11) * 100;
-    }
-
-    public float getY() {
-        return (y - (-0.2f)) / (1 - (-0.2f)) * 100;
+        return (x - (-2)) / (2 - (-2)) * 100;
     }
 
     @Override
@@ -183,7 +176,15 @@ public class Boss implements SceneDrawable {
         isActivated = true;
     }
 
+    public float getShieldPercentage() {
+        return hud.getBossShieldPercentage();
+    }
+
+    public void setShieldPercentage(float f) {
+        hud.setBossShieldPercentage(f);
+    }
+
     public boolean isDefeated() {
-        return health <= 0;
+        return hud.getBossShieldPercentage() <= 0;
     }
 }

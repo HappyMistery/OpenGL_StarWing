@@ -26,8 +26,8 @@ public class EnemyProjectile implements SceneDrawable {
         this.z = z;
 
         light = new Light(gl, GL10.GL_LIGHT3);
-        light.setDiffuseColor(new float[]{0.6f, 0.1f, 0.1f, 1.0f});
-        light.setSpecularColor(new float[]{0.8f, 0.2f, 0.2f, 1.0f});
+        light.setDiffuseColor(new float[]{0.6f, 0.2f, 0.2f, 1.0f});
+        light.setSpecularColor(new float[]{0.5f, 0.5f, 0.5f, 1.0f});
         light.setAttenuation(1.0f, 0.1f, 0.02f);
     }
 
