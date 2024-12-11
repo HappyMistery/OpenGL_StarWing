@@ -6,18 +6,15 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class BoostBar implements HUDDrawable {
     private final float x, y;
-    private final FloatBuffer topBorderBuffer;
-    private final FloatBuffer bottomBorderBuffer;
-    private final FloatBuffer leftBorderBuffer;
-    private final FloatBuffer rightBorderBuffer;
     private float boostPercentage;    // Health percentage (0 to 1)
+    private final FloatBuffer topBorderBuffer, bottomBorderBuffer, leftBorderBuffer, rightBorderBuffer;
 
     public BoostBar(float x, float y) {
         this.x = x;
         this.y = y;
         this.boostPercentage = 1.0f; // Full boost by default
 
-        // Precompute static buffers for borders
+        // Precompute static buffers for borders (optimizations)
         float width = 1.75f, height = 0.3f, borderHeight = 0.05f, borderWidth = 0.05f;
         this.topBorderBuffer = GLUtils.createFloatBuffer(new float[]{
                 x, y + height, 0, x + width, y + height, 0, x, y + height + borderHeight, 0, x + width, y + height + borderHeight, 0
@@ -36,18 +33,16 @@ public class BoostBar implements HUDDrawable {
         });
     }
 
-    // Method to set the boost percentage (0 to 1)
     public void setBoostPercentage(float boostPercentage) {
         if(this.boostPercentage > 0) {
             this.boostPercentage = Math.min(1f, boostPercentage);
         }
     }
-    // Method to get the boost percentage (0 to 1)
+
     public float getBoostPercentage() {
         return this.boostPercentage;
     }
 
-    // Method to draw the health bar
     @Override
     public void draw(GL10 gl) {
         float width = 1.75f, height = 0.3f;
@@ -60,7 +55,7 @@ public class BoostBar implements HUDDrawable {
         gl.glColor4f(0.0f, 0.0f, 1.0f, 1.0f); // Blue color
         GLUtils.drawRectangle(gl, boostBuffer);
 
-        // Draw borders
+        // Draw borders using precomputed buffers
         gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // White color
         GLUtils.drawRectangle(gl, topBorderBuffer);
         GLUtils.drawRectangle(gl, bottomBorderBuffer);

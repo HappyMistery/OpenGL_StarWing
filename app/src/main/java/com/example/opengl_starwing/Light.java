@@ -1,16 +1,10 @@
 package com.example.opengl_starwing;
 
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.opengles.GL10;
 
 public class Light {
-	ByteBuffer vtbb;
-	FloatBuffer posicio;
-	FloatBuffer ambient;
-	FloatBuffer difuse;
-	FloatBuffer specular;
 	GL10 gl;
 	int lightid;
 
@@ -20,7 +14,6 @@ public class Light {
 		this.gl = gl;
 		this.lightid = lightid;
 		gl.glEnable(lightid);
-		//gl.glEnable(GL10.GL_COLOR_MATERIAL);
     }
 
 	//To enable and disable the light

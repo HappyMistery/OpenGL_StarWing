@@ -1,26 +1,22 @@
 package com.example.opengl_starwing;
 
-import android.content.Context;
-
 import java.nio.FloatBuffer;
 
 import javax.microedition.khronos.opengles.GL10;
 
 public class ShieldBar implements HUDDrawable {
     private final float x, y;
-    float width = 1.75f, height = 0.3f;
-    private final FloatBuffer topBorderBuffer;
-    private final FloatBuffer bottomBorderBuffer;
-    private final FloatBuffer leftBorderBuffer;
-    private final FloatBuffer rightBorderBuffer;
+    private float width = 1.75f;
+    private float height = 0.3f;
     private float shieldPercentage;    // Health percentage (0 to 1)
+    private final FloatBuffer topBorderBuffer, bottomBorderBuffer, leftBorderBuffer, rightBorderBuffer;
 
     public ShieldBar(float x, float y, float width, float height) {
         this.x = x;
         this.y = y;
-        this.shieldPercentage = 1.0f;
+        this.shieldPercentage = 1.0f; // Full health by default
 
-        // Precompute static buffers for borders
+        // Precompute static buffers for borders (optimizations)
         if(width != 0) {
             this.width = width;
         }
@@ -48,18 +44,16 @@ public class ShieldBar implements HUDDrawable {
         });
     }
 
-    // Method to set the shield percentage (0 to 1)
     public void setShieldPercentage(float shieldPercentage) {
         if(this.shieldPercentage > 0) {
             this.shieldPercentage = Math.min(1f, shieldPercentage);
         }
     }
-    // Method to get the shield percentage (0 to 1)
+
     public float getShieldPercentage() {
         return this.shieldPercentage;
     }
 
-    // Method to draw the shield bar
     @Override
     public void draw(GL10 gl) {
 
@@ -71,8 +65,8 @@ public class ShieldBar implements HUDDrawable {
         gl.glColor4f(1.0f, 0.0f, 0.0f, 1.0f); // Red color
         GLUtils.drawRectangle(gl, shieldBuffer);
 
-        // Draw borders
-        gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+        // Draw borders using precomputed buffers
+        gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // White color
         GLUtils.drawRectangle(gl, topBorderBuffer);
         GLUtils.drawRectangle(gl, bottomBorderBuffer);
         GLUtils.drawRectangle(gl, leftBorderBuffer);

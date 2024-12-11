@@ -8,54 +8,39 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class Building implements SceneDrawable{
     private Object3D building = null;
-    private Object3D buildingShadow = null; // Shadow object
-    private float x, y, z, shadowY;
-    private float sceneZ;
+    private Armwing armwing = null;
+    private float x, y, z, sceneZ;
     private float rotationY; // Random Y-axis rotation
-    private float alpha = 0.0f; // Initial alpha value
-    private final float TRANSPARENCY_THRESHOLD = 20f;
-    private final float FADE_IN_DISTANCE = 50f; // Range over which the building fades in
-    private float Y_COLLISION_THRESHOLD;
-    private float X_COLLISION_THRESHOLD;
+    private float Y_COLLISION_THRESHOLD, X_COLLISION_THRESHOLD;
     private boolean collided = false;
 
-    private Armwing armwing = null;
-
     public Building(GL10 gl, Context context, float x, float y, float z) {
-        this.rotationY = 0;
-        Y_COLLISION_THRESHOLD = 5f;
+        this.rotationY = 0; // Building is not rotated by default
+        Y_COLLISION_THRESHOLD = 5f; // Can't go over the  building by default
         Random random = new Random();
-        switch (random.nextInt(4)) {
+        switch (random.nextInt(4)) {    // Select a building model at random out of 4 models
             case 0:
-                building = new Object3D(context, R.raw.building1);
-                buildingShadow = new Object3D(context, R.raw.building1); // Initialize shadow
-                this.y = 2.5f;
+                building = new Object3D(context, R.raw.building1);  // Tall building
+                this.y = 2.5f;  // Tall building
                 X_COLLISION_THRESHOLD = 1.4f;
-                shadowY = -5f;
                 break;
             case 1:
-                building = new Object3D(context, R.raw.building2);
-                buildingShadow = new Object3D(context, R.raw.building2); // Initialize shadow
-                this.y = 2.1f;
+                building = new Object3D(context, R.raw.building2);  // Tall building
+                this.y = 2.1f;  // Tall building
                 X_COLLISION_THRESHOLD = 1.5f;
-                shadowY = -2.5f;
                 break;
             case 2:
-                building = new Object3D(context, R.raw.building3);
-                buildingShadow = new Object3D(context, R.raw.building3); // Initialize shadow
-                this.y = -0.1f;
+                building = new Object3D(context, R.raw.building3);  // Small building
+                this.y = -0.1f; // Small building
                 X_COLLISION_THRESHOLD = 1.5f;
-                Y_COLLISION_THRESHOLD = 1.1f;
-                shadowY = 0.1f;
+                Y_COLLISION_THRESHOLD = 1.1f;   // Can go over the building
                 break;
             case 3:
-                building = new Object3D(context, R.raw.building4);
-                buildingShadow = new Object3D(context, R.raw.building4); // Initialize shadow
-                this.y = -0.2f;
+                building = new Object3D(context, R.raw.building4);  // Small building
+                this.y = -0.2f; // Small building
                 X_COLLISION_THRESHOLD = 0.9f;
-                Y_COLLISION_THRESHOLD = 0.9f;
-                shadowY = 0.2f;
-                this.rotationY = random.nextBoolean() ? 0f : 90f; // Randomly select 0 or 90 degrees
+                Y_COLLISION_THRESHOLD = 0.9f;   // Can go over the building
+                this.rotationY = random.nextBoolean() ? 0f : 90f; // Randomly rotate 0 or 90 degrees
                 break;
         }
         building.loadTexture(gl, context, R.drawable.black);
@@ -66,42 +51,42 @@ public class Building implements SceneDrawable{
     public void setPosition(float x, float z) {
         this.x = x;
         this.z = z;
-        collided = false;
+        collided = false;   // Reset collision flag when building is moved (when building is replaced again in the scene)
     }
 
     public void setArmwing(Armwing armwing) {
         this.armwing = armwing;
     }
 
-    public void updateScenePos(float z) {
-        sceneZ = z;
-    }
-
-    public void updateAlpha(float sceneZ) {
-        if (sceneZ > TRANSPARENCY_THRESHOLD) {
-            float fadeStart = TRANSPARENCY_THRESHOLD;
-            float fadeEnd = TRANSPARENCY_THRESHOLD + FADE_IN_DISTANCE;
-            alpha = Math.min(1f, Math.max(0f, (sceneZ - fadeStart) / (fadeEnd - fadeStart)));
-        } else {
-            alpha = 0f; // Fully transparent
-        }
-        building.setAlpha(alpha);
-    }
-
     public float getScenePos() {
         return sceneZ;
     }
 
+    public void draw(GL10 gl) {
+        gl.glPushMatrix();
+        gl.glScalef(15f, 15f, 12f);
+        gl.glTranslatef(x, y, z);
+        gl.glRotatef(rotationY, 0f, 1f, 0f); // Apply random rotation on Y-axis
+        building.draw(gl);
+        checkArmwingColision(); // Check if the Armwing has collided with the building
+        gl.glPopMatrix();
+    }
+
+    public void updateScenePos(float z) {
+        sceneZ = z;
+    }
+
+    // Map the Building's X position to the Armwing's X position in order to check collisions easily
     private float mapBuildingXToArmwingX() {
         float buildingXMin = 22f;
         float buildingXMax = 30f;
         float armwingXMin = -4f;
         float armwingXMax = 4f;
 
-        // Calculate the mapped X position without arbitrary offsets
         return armwingXMin + (((x-0.5f) - buildingXMin) / (buildingXMax - buildingXMin)) * (armwingXMax - armwingXMin);
     }
 
+    // Map the Building's Y position to the Armwing's Y position in order to check collisions easily
     private float mapBuildingYToArmwingY() {
         float buildingYMin = -0.2f;
         float buildingYMax = 2.5f;
@@ -115,46 +100,20 @@ public class Building implements SceneDrawable{
         return ((armwingYRange / buildingYRange) * (-buildingYMin)) + armwingYMin;
     }
 
-
     private void checkArmwingColision() {
         float armwingX = armwing.getArmwingX();
         float armwingY = armwing.getArmwingY();
         float mappedBuildingX = mapBuildingXToArmwingX();
         float mappedBuildingY = mapBuildingYToArmwingY();
 
-        if (!collided) {
+        if (!collided) {    // If the Armwing hasn't collided already with this building, check collision
             if ((Math.abs(armwingX - mappedBuildingX) < X_COLLISION_THRESHOLD) &&
                     (Math.abs(armwingY - mappedBuildingY) < Y_COLLISION_THRESHOLD) &&
-                    (sceneZ >= 415f) && (sceneZ <= 425f)) {
+                    (sceneZ >= 415f) && (sceneZ <= 425f)) { // If all axes coincide, the Armwing collided with the building
                 armwing.setShieldPercentage(armwing.getShieldPercentage() - 0.25f);
-                collided = true;
-                armwing.getCam().startShake(0.5f, 1.0f);
+                collided = true;    // Flag that the Armwing has collided with this building so that it doesn't collide again
+                armwing.getCam().startShake(0.5f, 1.0f);    // Make that cam SHAKE!
             }
         }
-    }
-
-    public void draw(GL10 gl) {
-        gl.glPushMatrix();
-        gl.glScalef(15f, 15f, 12f);
-        gl.glTranslatef(x, y, z);
-        gl.glRotatef(rotationY, 0f, 1f, 0f); // Apply random rotation on Y-axis
-        if(alpha < 1f) {
-            gl.glColor4f(1f, 1f, 1f, alpha);
-            updateAlpha(sceneZ);
-        }
-        building.draw(gl);
-        checkArmwingColision();
-
-        // Draw the shadow
-        /*
-        gl.glScalef(0.8f, 0.8f, 0.8f);
-        gl.glTranslatef(0, shadowY, 0);
-        gl.glRotatef(180, 1f, 0f, 0f);
-        gl.glDisable(GL10.GL_LIGHTING);
-        buildingShadow.setAlpha(1f);
-        buildingShadow.draw(gl);
-        gl.glEnable(GL10.GL_LIGHTING);
-         */
-        gl.glPopMatrix();
     }
 }

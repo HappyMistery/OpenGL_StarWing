@@ -6,15 +6,13 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class Stairs  implements SceneDrawable{
     private final Object3D stairs;
-    private final Light light1;
-    private final Light light2;
 
     public Stairs(GL10 gl,Context context) {
         stairs = new Object3D(context, R.raw.stairs);
 
         // Initialize the lights
-        light1 = new Light(gl, GL10.GL_LIGHT4);
-        light2 = new Light(gl, GL10.GL_LIGHT5);
+        Light light1 = new Light(gl, GL10.GL_LIGHT4);
+        Light light2 = new Light(gl, GL10.GL_LIGHT5);
 
         // Configure light1
         light1.setPosition(new float[]{50f, 20f, 200f, 1f});

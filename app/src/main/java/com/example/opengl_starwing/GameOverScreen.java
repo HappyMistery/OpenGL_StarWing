@@ -1,13 +1,10 @@
 package com.example.opengl_starwing;
 
-import android.content.Context;
-
 import javax.microedition.khronos.opengles.GL10;
 
 public class GameOverScreen implements HUDDrawable {
-    private boolean active; // Whether the GameOverScreen is active
-    private final float x, y;
-    private final float halfHeight, halfWidth;
+    private boolean active; // Flag to track if the Game Over screen is active
+    private final float x, y, halfHeight, halfWidth;
     private float alpha = 0;
 
     public GameOverScreen(float x, float y, float halfHeight, float halfWidth) {
@@ -53,7 +50,7 @@ public class GameOverScreen implements HUDDrawable {
 
     // Helper method to draw a rectangle
     private void drawRectangle(GL10 gl, float x, float y, float width, float height) {
-        gl.glPushMatrix(); // Save current matrix
+        gl.glPushMatrix();
 
         // Move to the position of the shield bar
         gl.glTranslatef(x, y, 0);
@@ -71,7 +68,7 @@ public class GameOverScreen implements HUDDrawable {
         gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4); // Draw the rectangle
         gl.glDisableClientState(GL10.GL_VERTEX_ARRAY); // Disable vertex arrays
 
-        gl.glPopMatrix(); // Restore matrix
+        gl.glPopMatrix();
     }
 
     // Helper method to create a FloatBuffer from a float array

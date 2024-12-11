@@ -69,8 +69,8 @@ public class Scene {
         // Initialize the ObjectPools for Building and Portal
         buildingPool = new ObjectPool<Building>(gl, context, Building::new, 40, 50); // Max 50 buildings in pool
         portalPool = new ObjectPool<Portal>(gl, context, Portal::new, 10, 10); // Max 10 portals in pool
-        armwingProjectilePool = new ObjectPool<>(gl, context, ArmwingProjectile::new, 128, 128);
-        enemyProjectilePool = new ObjectPool<>(gl, context, EnemyProjectile::new, 128, 128);
+        armwingProjectilePool = new ObjectPool<>(gl, context, ArmwingProjectile::new, 50, 50);
+        enemyProjectilePool = new ObjectPool<>(gl, context, EnemyProjectile::new, 50, 50);
         enemyPool = new ObjectPool<Enemy>(gl, context, Enemy::new, 16, 16); // Max 16 enemies in pool
 
         this.armwing = armwing;
@@ -302,7 +302,6 @@ public class Scene {
 
     private void despawnEnemies() {
         for (Enemy enemy : stObjs) {
-            enemy.defeat(); // Mark the enemy as defeated
             enemyPool.returnObject(enemy); // Return the enemy to the object pool
         }
         stObjs.clear(); // Clear the list of enemies
@@ -369,8 +368,6 @@ public class Scene {
 
                 float collisionThreshold = 30f;
 
-                System.out.println("BOSS: " + bossX + " " + bossZ);
-                System.out.println("PROJECTILE: " + projX + " " + projZ);
 
                 // If all three axes collide
                 if (Math.abs(projX - bossX) < collisionThreshold &&
@@ -399,7 +396,6 @@ public class Scene {
                     // Handle collision: Remove the projectile and the enemy
                     toRemoveProjectiles.add(projectile);
                     toRemoveEnemies.add(enemy);
-                    enemy.defeat(); // Mark the enemy as defeated
                     enemiesDefeated++;
                     // Exit the loop to avoid multiple collisions with the same projectile
                     break;

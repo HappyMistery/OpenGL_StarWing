@@ -20,10 +20,6 @@ import android.opengl.GLES20;
 import android.opengl.GLUtils;
 
 public class Object3D {
-
-    // Color enabled or not
-    boolean colorEnabled = false;
-
     // Texture enabled or not
     boolean textureEnabled = false;
 
@@ -55,12 +51,12 @@ public class Object3D {
             String line;
             String[] tmp,ftmp;
 
-            ArrayList<Float> vlist = new ArrayList<Float>();
-            ArrayList<Float> tlist = new ArrayList<Float>();
-            ArrayList<Float> nlist = new ArrayList<Float>();
-            ArrayList<Integer> vindex = new ArrayList<Integer>();
-            ArrayList<Integer> tindex = new ArrayList<Integer>();
-            ArrayList<Integer> nindex = new ArrayList<Integer>();
+            ArrayList<Float> vlist = new ArrayList<>();
+            ArrayList<Float> tlist = new ArrayList<>();
+            ArrayList<Float> nlist = new ArrayList<>();
+            ArrayList<Integer> vindex = new ArrayList<>();
+            ArrayList<Integer> tindex = new ArrayList<>();
+            ArrayList<Integer> nindex = new ArrayList<>();
 
             InputStream is = ctx.getResources().openRawResource(filenameId);
             BufferedReader inb = new BufferedReader(new InputStreamReader(is), 1024);

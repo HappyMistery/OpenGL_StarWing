@@ -12,13 +12,12 @@ import java.nio.FloatBuffer;
 
 public class FontRenderer {
     private int textureId;
-    private int numColumns = 31;
-    private int numRows = 3;
-    private float charWidth;
-    private float charHeight;
+    private final int numColumns = 31;
+    private final int numRows = 3;
+    private final float charWidth, charHeight;
 
-    private FloatBuffer vertexBuffer; // Preallocated buffer for vertices
-    private FloatBuffer texCoordBuffer; // Preallocated buffer for texture coordinates
+    private final FloatBuffer vertexBuffer; // Preallocated buffer for vertices
+    private final FloatBuffer texCoordBuffer; // Preallocated buffer for texture coordinates
 
     public FontRenderer(GL10 gl, Context context) {
         // Load texture and calculate character dimensions

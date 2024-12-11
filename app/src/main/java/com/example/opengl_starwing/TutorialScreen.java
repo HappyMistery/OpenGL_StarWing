@@ -7,21 +7,11 @@ import javax.microedition.khronos.opengles.GL10;
 public class TutorialScreen implements HUDDrawable {
     private final float x, y;
     private final float halfHeight, halfWidth;
-
-    private final BGImage arrowUp;
-    private final BGImage arrowDown;
-    private final BGImage arrowLeft;
-    private final BGImage arrowRight;
-
-    private final BGImage boostTouch;
-    private final BGImage switchPOVTouch;
-    private final BGImage shootTouch;
-
+    private final BGImage arrowUp,arrowDown, arrowLeft, arrowRight, boostTouch, switchPOVTouch, shootTouch;
     private float respirationAlpha = 0.5f; // Initial alpha value
     private boolean alphaIncreasing = true; // Alpha direction
 
     public TutorialScreen(GL10 gl, Context context, float x, float y, float halfHeight, float halfWidth) {
-
         this.x = x;
         this.y = y;
         this.halfHeight = halfHeight;
@@ -60,7 +50,6 @@ public class TutorialScreen implements HUDDrawable {
         drawRectangle(gl, x, y, width, height+0.1f);
 
         // Draw arrows at the center
-
         gl.glPushMatrix();
         gl.glScalef(0.4f, 0.6f, 0);
         gl.glRotatef(0, 1, 1, 0);
@@ -81,8 +70,8 @@ public class TutorialScreen implements HUDDrawable {
         arrowDown.setAlpha(respirationAlpha);
         gl.glPopMatrix();
 
-        gl.glPushMatrix();
         // Draw touch instructions
+        gl.glPushMatrix();
         gl.glScalef(0.4f, 0.6f, 0);
         gl.glRotatef(0, 1, 1, 0);
         gl.glRotatef(-90, 0, 0, 1);
@@ -103,7 +92,7 @@ public class TutorialScreen implements HUDDrawable {
 
     // Helper method to draw a rectangle
     private void drawRectangle(GL10 gl, float x, float y, float width, float height) {
-        gl.glPushMatrix(); // Save current matrix
+        gl.glPushMatrix();
 
         // Move to the position of the shield bar
         gl.glTranslatef(x, y, 0);
@@ -121,7 +110,7 @@ public class TutorialScreen implements HUDDrawable {
         gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4); // Draw the rectangle
         gl.glDisableClientState(GL10.GL_VERTEX_ARRAY); // Disable vertex arrays
 
-        gl.glPopMatrix(); // Restore matrix
+        gl.glPopMatrix();
     }
 
     // Helper method to create a FloatBuffer from a float array

@@ -6,7 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class GLUtils {
-    // Use a precomputed buffer to draw a rectangle
+    // Use a precomputed buffer to draw a rectangle (optimizations)
     public static void drawRectangle(GL10 gl, FloatBuffer buffer) {
         gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
         gl.glVertexPointer(3, GL10.GL_FLOAT, 0, buffer);

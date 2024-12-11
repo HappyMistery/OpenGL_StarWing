@@ -20,7 +20,8 @@ public class MainActivity extends Activity {
     private Handler movementHandler;
     private boolean isMoving = false;
     private Runnable moveRunnable;
-    private float moveX = 0, moveY = 0;
+    private float moveX = 0;
+    private float moveY = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

@@ -17,18 +17,11 @@ import android.opengl.GLUtils;
  * Render the cube by translating and rotating the face.
  */
 public class BGImage{
-    private FloatBuffer vertexBuffer; // Buffer for vertex-array
-    private FloatBuffer texBuffer;    // Buffer for texture-coords-array (NEW)
+    private final FloatBuffer vertexBuffer; // Buffer for vertex-array
+    private final FloatBuffer texBuffer;    // Buffer for texture-coords-array (NEW)
     private int texIndex = 0;
     private int texID;
     private float alpha = 1.0f;
-
-    private float[] vertices = { // Vertices for a face
-            -1.0f, -1.0f, 0.0f,  // 0. left-bottom-front
-            1.0f, -1.0f, 0.0f,  // 1. right-bottom-front
-            -1.0f,  1.0f, 0.0f,  // 2. left-top-front
-            1.0f,  1.0f, 0.0f   // 3. right-top-front
-    };
 
     float[] texCoords = { // Texture coords for the above face (NEW)
             0.0f, 1.0f,  // A. left-bottom (NEW)
@@ -41,6 +34,17 @@ public class BGImage{
     // Constructor - Set up the buffers
     public BGImage() {
         // Setup vertex-array buffer. Vertices in float. An float has 4 bytes
+        // Vertices for a face
+        // 0. left-bottom-front
+        // 1. right-bottom-front
+        // 2. left-top-front
+        // 3. right-top-front
+        float[] vertices = { // Vertices for a face
+                -1.0f, -1.0f, 0.0f,  // 0. left-bottom-front
+                1.0f, -1.0f, 0.0f,  // 1. right-bottom-front
+                -1.0f, 1.0f, 0.0f,  // 2. left-top-front
+                1.0f, 1.0f, 0.0f   // 3. right-top-front
+        };
         ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * 4);
         vbb.order(ByteOrder.nativeOrder()); // Use native byte order
         vertexBuffer = vbb.asFloatBuffer(); // Convert from byte to float
@@ -58,10 +62,10 @@ public class BGImage{
     // Draw the shape
     public void draw(GL10 gl) {
         gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[texID]);
-        gl.glDisable(GL10.GL_LIGHTING);
+        gl.glDisable(GL10.GL_LIGHTING); // BackGround images don't have to be affected by Light
         gl.glEnable(GL10.GL_BLEND); // Enable transparency
-        gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-        gl.glColor4f(1,1,1, alpha);
+        gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA); // Define transparency function
+        gl.glColor4f(1,1,1, alpha); // Base color as white
 
         gl.glFrontFace(GL10.GL_CCW);    // Front face in counter-clockwise orientation
         gl.glEnable(GL10.GL_CULL_FACE); // Enable cull face
@@ -73,7 +77,7 @@ public class BGImage{
         gl.glEnableClientState(GL10.GL_TEXTURE_COORD_ARRAY);  // Enable texture-coords-array
         gl.glTexCoordPointer(2, GL10.GL_FLOAT, 0, texBuffer); // Define texture-coords buffer
 
-        // front
+        // front face
         gl.glPushMatrix();
         gl.glTranslatef(0.0f, 0.0f, 50.0f);
         gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
@@ -82,7 +86,7 @@ public class BGImage{
 
         gl.glDisableClientState(GL10.GL_TEXTURE_COORD_ARRAY);  // Disable texture-coords-array (NEW)
         gl.glDisableClientState(GL10.GL_VERTEX_ARRAY);
-        gl.glDisable(GL10.GL_CULL_FACE);
+        gl.glDisable(GL10.GL_CULL_FACE);    // Disable culling
         gl.glDisable(GL10.GL_TEXTURE_2D);  // Enable texture (NEW));
         gl.glDisable(GL10.GL_BLEND); // Disable transparency
         gl.glEnable(GL10.GL_LIGHTING);
@@ -91,7 +95,7 @@ public class BGImage{
     // Load an image into GL texture
     public void loadTexture(GL10 gl, Context context, int fileNameID) {
         gl.glGenTextures(1, textureIDs, texIndex); // Generate texture-ID array
-        texID = texIndex;
+        texID = texIndex; // Store the index where the texture is stored
 
         gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[texID]);   // Bind to texture ID
         // Set up texture filters
@@ -99,8 +103,7 @@ public class BGImage{
         gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST);
 
         Bitmap bitmap;
-        // Construct a bitmap for the specified file
-        bitmap = BitmapFactory.decodeResource(context.getResources(), fileNameID);
+        bitmap = BitmapFactory.decodeResource(context.getResources(), fileNameID);  // Construct a bitmap for the specified file
         // Build Texture from loaded bitmap for the currently-bind texture ID
         GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
         bitmap.recycle();

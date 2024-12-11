@@ -5,20 +5,15 @@ import java.nio.FloatBuffer;
 import javax.microedition.khronos.opengles.GL10;
 
 public class Button implements HUDDrawable {
-    private final float x, y, width, height, borderHeight, borderWidth;
     private final FloatBuffer mainRectangleBuffer;
     private final FloatBuffer bottomBorderBuffer;
     private final FloatBuffer leftBorderBuffer;
 
     public Button(float x, float y, float width, float height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
-        this.borderWidth = 0.05f;
-        this.borderHeight = 0.05f;
+        float borderWidth = 0.05f;
+        float borderHeight = 0.05f;
 
-        // Precompute vertex buffers
+        // Precompute vertex buffers (optimization)
         this.mainRectangleBuffer = GLUtils.createFloatBuffer(new float[]{
                 x, y, 0, x + width, y, 0, x, y + height, 0, x + width, y + height, 0
         });

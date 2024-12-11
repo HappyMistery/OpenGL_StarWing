@@ -43,10 +43,6 @@ public class ObjectPool<T> {
         }
     }
 
-    public int getAvailableCount() {
-        return availableObjects.size();
-    }
-
     public interface ObjectFactory<T> {
         T create(GL10 gl, Context context, float x, float y, float z);
     }

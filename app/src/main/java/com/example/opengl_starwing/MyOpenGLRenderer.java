@@ -13,8 +13,7 @@ public class MyOpenGLRenderer implements Renderer {
 	private BackGround bg;
     private HUD hud;
 	private Light light;
-	private Light sceneLight;
-	private Scene scene;
+    private Scene scene;
 	private Armwing armwing;
 
 	private final Context context;
@@ -34,7 +33,7 @@ public class MyOpenGLRenderer implements Renderer {
 		// Set background color (black with slight transparency)
 		gl.glClearColor(0.0f, 0.0f, 0.0f, 0.5f);
 
-		camera = new Camera(gl);
+		camera = new Camera();
 		bg = new BackGround(gl, context);
 		hud = new HUD(gl, context, halfHeight, halfWidth);
 		armwing = new Armwing(gl, context, camera.getCamZ(), hud, camera, halfWidth, halfHeight);
@@ -48,10 +47,10 @@ public class MyOpenGLRenderer implements Renderer {
 		light.enable();
 
 		// Initialize the second light for scene illumination
-		sceneLight = new Light(gl, GL10.GL_LIGHT1);
+        Light sceneLight = new Light(gl, GL10.GL_LIGHT1);
 		sceneLight.setPosition(new float[]{5.0f, 10.0f, 5.0f, 1.0f}); // Positioned above the buildings
 		sceneLight.setAmbientColor(new float[]{0.2f, 0.2f, 0.2f, 1.0f}); // Soft ambient light
-		sceneLight.setDiffuseColor(new float[]{0.2f, 0.2f, 0.15f, 1.0f}); // Brighter diffuse ligh
+		sceneLight.setDiffuseColor(new float[]{0.2f, 0.2f, 0.15f, 1.0f}); // Brighter diffuse light
 		sceneLight.enable(); // Enable the second light
 
 		// Create the 3D scene with its moving ground points

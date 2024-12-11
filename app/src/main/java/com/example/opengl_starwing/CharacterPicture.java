@@ -6,10 +6,7 @@ import java.nio.FloatBuffer;
 
 public class CharacterPicture implements HUDDrawable {
     private final BGImage character = new BGImage();
-    private final FloatBuffer topBorderBuffer;
-    private final FloatBuffer bottomBorderBuffer;
-    private final FloatBuffer leftBorderBuffer;
-    private final FloatBuffer rightBorderBuffer;
+    private final FloatBuffer topBorderBuffer, bottomBorderBuffer, leftBorderBuffer, rightBorderBuffer;
     private float x, y;
     private final float width = 1.4f;
     private final float height = 1.3f;
@@ -23,7 +20,7 @@ public class CharacterPicture implements HUDDrawable {
         this.x = x;
         this.y = y;
 
-        // Precompute static border buffers
+        // Precompute static border buffers optimization)
         topBorderBuffer = GLUtils.createFloatBuffer(new float[]{
                 x - borderHeight * 6, y + height, 0,
                 x - borderHeight * 6 + width, y + height, 0,
@@ -64,17 +61,12 @@ public class CharacterPicture implements HUDDrawable {
         // Draw borders
         gl.glDisable(GL10.GL_LIGHTING);
         gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f); // White color
-
         GLUtils.drawRectangle(gl, topBorderBuffer);
         GLUtils.drawRectangle(gl, bottomBorderBuffer);
         GLUtils.drawRectangle(gl, leftBorderBuffer);
         GLUtils.drawRectangle(gl, rightBorderBuffer);
 
         gl.glEnable(GL10.GL_LIGHTING);
-    }
-
-    public int getFileNameID() {
-        return fileNameID;
     }
 
     public void setPosition(float x, float y) {

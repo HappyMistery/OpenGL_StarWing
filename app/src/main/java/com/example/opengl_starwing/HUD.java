@@ -9,8 +9,8 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class HUD {
     private final List<HUDDrawable> GUI_lmns;
-    private boolean boostActive = false;
     private final FontRenderer fontRenderer;
+    private boolean boostActive = false;
     private boolean gameEnded = false;
 
     private final ShieldBar shieldBar;
@@ -46,10 +46,10 @@ public class HUD {
     }
 
     public void draw(GL10 gl, Armwing armwing, Scene scene) {
-        gl.glDisable(GL10.GL_LIGHTING);
+        gl.glDisable(GL10.GL_LIGHTING); // None of the HUD elements need light
 
         if (bossPhase) {
-            bossShieldBar.draw(gl);
+            bossShieldBar.draw(gl); // If the boss is active, draw its health bar
         }
 
         for (HUDDrawable lmn : GUI_lmns) {
@@ -64,7 +64,7 @@ public class HUD {
             stopBoost();
         }
 
-        if (boostActive && getBoostPercentage() <= 0.01) {
+        if (boostActive && getBoostPercentage() <= 0.01) {  // Automatically stop boosting when running out of boost
             stopBoost();
             boost(armwing, scene);
         }
@@ -79,26 +79,26 @@ public class HUD {
             gameOverScreen.activate();
         }
 
-        shieldBar.regainShield();
+        shieldBar.regainShield();   // Automatically regen shield (very little amount tho)
 
         // Draw the tutorial screen if it is visible
         if (showTutorial) {
             tutorialScreen.draw(gl);
-            tutorialTimer--;
-            if (tutorialTimer <= 0) {
+            tutorialTimer--;    // Count down to hide the tutorial
+            if (tutorialTimer <= 0) {   // If tutorial count down ends
                 showTutorial = false; // Stop showing the tutorial
             }
         }
         drawTexts(gl);
 
-        gl.glEnable(GL10.GL_LIGHTING);
+        gl.glEnable(GL10.GL_LIGHTING);  // Enable lighting again
     }
 
     private void drawTexts(GL10 gl) {
         float charSize = 0.4f;
         float pictureX = -2.4f;
         float pictureY = -3.75f;
-        if(gameEnded) {
+        if(gameEnded) { // Text to show if game has ended
             claptrap.setPosition(pictureX, pictureY);
             claptrap.draw(gl);
             float textY = 2.8f;
@@ -109,15 +109,15 @@ public class HUD {
             fontRenderer.drawText(gl, "how did you know stairs", textX, textY + charSize *2, charSize);
             fontRenderer.drawText(gl, "were my ONLY weakness?!", textX, textY + charSize *3, charSize);
             charSize = 0.4f;
-        } else {
+        } else {    //While game hasn't ended, hide claptrap
             claptrap.setPosition(pictureX -50, pictureY -50);
             claptrap.draw(gl);
         }
 
-        if(gameOverScreen.isActive()) {
+        if(gameOverScreen.isActive()) { // Text to show if player dies
             fontRenderer.drawText(gl, "GAME OVER", -2f, 0.5f, charSize*2f);
             fontRenderer.drawText(gl, "Restart", 3.7f, -3.55f, charSize-0.1f);
-        } else {
+        } else {    // Text to show while playing
             fontRenderer.drawText(gl, "Shield", -4.6f, 3.1f, charSize);
             fontRenderer.drawText(gl, "Boost", 3.4f, 3.1f, charSize);
             fontRenderer.drawText(gl, "Cam View", 3.7f, -3.55f, charSize-0.1f);
