@@ -15,8 +15,6 @@ public class Enemy implements SceneDrawable{
     private float targetX, targetY;
     private float halfHeight;
     private float health = 1;
-    private float VELOCITY_Z = -1f;
-    private float MOVEMENT_VELOCITY = 0.05f; // Speed of horizontal movement
 
     private float enemyYaw = 0f;
     private float enemyRoll = 0f;
@@ -151,9 +149,11 @@ public class Enemy implements SceneDrawable{
             }
         } else {
             // Existing movement logic
-            z += VELOCITY_Z;
+            z += -scene.getSpeed();
 
             // Horizontal movement
+            // Speed of horizontal movement
+            float MOVEMENT_VELOCITY = 0.01f;
             if (Math.abs(x - targetX) < MOVEMENT_VELOCITY) {
                 x = targetX;
                 setNewTargetX();
@@ -261,11 +261,6 @@ public class Enemy implements SceneDrawable{
     public void setPosition(float x, float y) {
         this.x = x;
         this.y = y;
-    }
-
-    public void setSpeed(float speed) {
-        VELOCITY_Z = -speed;
-        MOVEMENT_VELOCITY = speed/75; // Adjust horizontal speed proportionally
     }
 
     public boolean isDefeated() {

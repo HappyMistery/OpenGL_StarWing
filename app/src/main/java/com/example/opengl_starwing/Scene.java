@@ -74,6 +74,11 @@ public class Scene {
         enemyPool = new ObjectPool<Enemy>(gl, context, Enemy::new, 16, 16); // Max 16 enemies in pool
 
         this.armwing = armwing;
+
+        boss = new Boss(gl, context);
+        boss.setScene(this);
+        boss.setHUD(armwing.getHUD());
+        boss.initialize(0, 0.75f, 150);
     }
 
     public void addDyLmn(SceneDrawable lmn) {
@@ -85,6 +90,16 @@ public class Scene {
     }
 
     public void draw(GL10 gl) {
+        if (boss.isActivated()) {
+            boss.draw(gl);
+            z += speed;
+            armwingZ += speed;
+            gl.glPushMatrix();
+            gl.glTranslatef(x, y, z);
+            gp.checkAndResetPosition(z, resetThreshold, speed, initialZ);
+            gp.draw(gl);
+            gl.glPopMatrix();
+        }
         if (gameEnded) {
             stairs.draw(gl);    // Only draw the stairs
             gl.glPushMatrix();
@@ -93,11 +108,10 @@ public class Scene {
             gl.glPopMatrix();
             return; // Skip the rest of the drawing logic
         }
+        switchSpawnMode();
 
         checkArmwingProjectilesCollisions();
         checkEnemyProjectilesCollisions();
-
-        switchSpawnMode();
 
         z += speed;
         newZ += speed / 12;
@@ -142,13 +156,9 @@ public class Scene {
     }
 
     private void switchSpawnMode() {
-        if (wavesCompleted >= 3) {
-            if (boss == null) {
-                boss = new Boss(gl, context);
-                boss.setScene(this);
-                boss.setHUD(armwing.getHUD());
-                boss.setHalfHeight(armwing.getHalfHeight());
-                boss.initialize(0, 0, -this.armwingZ + -projectileDespawnThreshold -250, -250);
+        if (wavesCompleted >= 1) {
+            if (!boss.isActivated()) {
+                boss.activate();
             } else if (boss.isDefeated()) {
                 gameEnded = true;
             }
@@ -284,12 +294,11 @@ public class Scene {
             // Randomize the position of the enemy
             float randomX = (random.nextFloat() * 4.7f) + 11f;
             float randomY = (random.nextFloat() * 1.2f) - 0.2f;
-            float enemyZ = 250;
+            float enemyZ = 250 * Math.min(speed, 1.17f);
             Enemy newEnemy = enemyPool.getObject();
             if (newEnemy != null) {
                 newEnemy.initialize(randomX, randomY, -this.armwingZ + -projectileDespawnThreshold -enemyZ, -enemyZ);
                 newEnemy.setHalfHeight(armwing.getHalfHeight());
-                newEnemy.setSpeed(speed);
                 newEnemy.setScene(this);
                 addStLmn(newEnemy);
                 enemiesSpawned++;
@@ -308,7 +317,7 @@ public class Scene {
     }
 
 
-    public void shootArmwingProjectile(float armwingX, float armwingY, float armwingZ) {
+    public void shootArmwingProjectile(float armwingX, float armwingY) {
         ArmwingProjectile projectile = armwingProjectilePool.getObject();
         if (projectile != null) {
             projectile.setPosition(armwingX, armwingY, -this.armwingZ + -projectileDespawnThreshold);
@@ -318,8 +327,10 @@ public class Scene {
 
     public void shootEnemyProjectile(float enemyX, float enemyY, float enemyZ, boolean isBoss) {
         EnemyProjectile projectile = enemyProjectilePool.getObject();
+        if (isBoss) enemyZ = -this.armwingZ + -projectileDespawnThreshold - 200;
         if (projectile != null) {
             projectile.setPosition(enemyX, enemyY, enemyZ);
+            if (isBoss) projectile.markAsBoss();
             enemyProjectiles.add(projectile);
         }
     }
@@ -365,8 +376,7 @@ public class Scene {
                 float enemyY = enemy.getY();
                 float enemyZ = enemy.getScenePos();
 
-                // Set a threshold distance for collision
-                float collisionThreshold = 10.0f;
+                float collisionThreshold = 10f;
 
                 // If all three axes collide
                 if (Math.abs(projX - enemyX) < collisionThreshold &&
@@ -437,9 +447,6 @@ public class Scene {
 
     public void setSpeed(float speed) {
         this.speed = speed;
-        for (Enemy enemy : stObjs) {
-            enemy.setSpeed(speed);
-        }
     }
 
     public float getSpeed() {

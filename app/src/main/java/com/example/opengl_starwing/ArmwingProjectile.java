@@ -5,15 +5,15 @@ import android.content.Context;
 import javax.microedition.khronos.opengles.GL10;
 
 public class ArmwingProjectile implements SceneDrawable {
-    protected Object3D projectile = null;
-    protected Light light;
-    protected float x, y, z, sceneZ;
-    protected float rotation = 0f;
-    protected final float ROTATION_SPEED = 3f;
-    protected float VELOCITY_Z = -6f;
+    private Object3D projectile = null;
+    private Light light;
+    private float x, y, z, sceneZ;
+    private float rotation = 0f;
+    private final float ROTATION_SPEED = 3f;
+    private float VELOCITY_Z = -6f;
 
-    protected final Context context;
-    protected final GL10 gl;
+    private final Context context;
+    private final GL10 gl;
 
     public ArmwingProjectile(GL10 gl, Context context, float x, float y, float z) {
         projectile = new Object3D(context, R.raw.projectile);
@@ -28,7 +28,6 @@ public class ArmwingProjectile implements SceneDrawable {
         light.setDiffuseColor(new float[]{0.2f, 0.2f, 0.6f, 1.0f});
         light.setSpecularColor(new float[]{0.5f, 0.5f, 0.5f, 1.0f});
         light.setAttenuation(1.0f, 0.1f, 0.02f);
-        light.enable();
     }
 
     private float mapArmwingXToSceneX(float x) {
@@ -82,6 +81,7 @@ public class ArmwingProjectile implements SceneDrawable {
 
         // Update the light position to follow the projectile
         light.setPosition(new float[]{x, y, z, 1.0f});
+        light.enable();
     }
 
     @Override
