@@ -99,6 +99,7 @@ public class HUD {
         float pictureX = -2.4f;
         float pictureY = -3.75f;
         if(gameEnded) { // Text to show if game has ended
+            bossPhase = false;
             claptrap.setPosition(pictureX, pictureY);
             claptrap.draw(gl);
             float textY = 2.8f;
