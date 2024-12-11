@@ -10,6 +10,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.microedition.khronos.opengles.GL10;
 
 public class Scene {
+    private final GL10 gl;
+    private final Context context;
     private float speed = 1f;
     private final List<SceneDrawable> dyObjs;
     private final List<Enemy> stObjs;
@@ -17,7 +19,8 @@ public class Scene {
     private final CopyOnWriteArrayList<EnemyProjectile> enemyProjectiles;   // Separate list for Enemy projectiles
     private final GroundPoints gp;
     private Stairs stairs;
-    private Boss boss = null;
+    private final Boss boss;
+    private final Armwing armwing;
     private final float x, y, initialZ;
     private float z, newZ, armwingZ;
     private final Random random = new Random();
@@ -30,6 +33,8 @@ public class Scene {
     private float wavesCompleted = 0;
     private long modeStartTime = 0;  // Time when the spawn mode started
     private boolean gameEnded = false; // Flag to indicate end of game
+    private SpawnMode currentSpawnMode = SpawnMode.BUILDINGS_AND_PORTALS;   // Start game by spawning buildings and portals
+    private long lastModeSwitchTime = System.currentTimeMillis(); // Track time for mode switching
 
     private final ObjectPool<Building> buildingPool;
     private final ObjectPool<Portal> portalPool;
@@ -37,44 +42,37 @@ public class Scene {
     private final ObjectPool<ArmwingProjectile> armwingProjectilePool;
     private final ObjectPool<EnemyProjectile> enemyProjectilePool;
 
-    private final Armwing armwing;
-
     private enum SpawnMode {
         BUILDINGS_AND_PORTALS,
         ENEMIES
     }
-
-    private SpawnMode currentSpawnMode = SpawnMode.BUILDINGS_AND_PORTALS;
-    private long lastModeSwitchTime = System.currentTimeMillis(); // Track time for mode switching
-
-    private GL10 gl;
-    private Context context;
 
     public Scene(GL10 gl, Context context, float x, float y, float z, Armwing armwing) {
         this.gl = gl;
         this.context = context;
         dyObjs = new ArrayList<>(64);
         stObjs = new ArrayList<>(16);
-        armwingProjectiles = new CopyOnWriteArrayList<ArmwingProjectile>();
-        enemyProjectiles = new CopyOnWriteArrayList<EnemyProjectile>();
+        armwingProjectiles = new CopyOnWriteArrayList<>();
+        enemyProjectiles = new CopyOnWriteArrayList<>();
         this.x = -x;
         this.y = y;
         this.z = -z;
         initialZ = -z;
         resetThreshold = z - 1;
 
-        gp = new GroundPoints(84, 20, 42, 12, this.z);
+        gp = new GroundPoints(84, 20, 42, 12, this.z);  // Initialize ground points
         gp.setPosition(0, y, -z / 3);
 
-        // Initialize the ObjectPools for Building and Portal
-        buildingPool = new ObjectPool<Building>(gl, context, Building::new, 40, 50); // Max 50 buildings in pool
-        portalPool = new ObjectPool<Portal>(gl, context, Portal::new, 10, 10); // Max 10 portals in pool
+        // Initialize the ObjectPools for buildings, portals, enemies and projectiles
+        buildingPool = new ObjectPool<>(gl, context, Building::new, 25, 40); // Max 50 buildings in pool
+        portalPool = new ObjectPool<>(gl, context, Portal::new, 10, 10); // Max 10 portals in pool
+        enemyPool = new ObjectPool<>(gl, context, Enemy::new, 16, 16); // Max 16 enemies in pool
         armwingProjectilePool = new ObjectPool<>(gl, context, ArmwingProjectile::new, 50, 50);
         enemyProjectilePool = new ObjectPool<>(gl, context, EnemyProjectile::new, 50, 50);
-        enemyPool = new ObjectPool<Enemy>(gl, context, Enemy::new, 16, 16); // Max 16 enemies in pool
 
         this.armwing = armwing;
 
+        // Initialize boss (WINTON)
         boss = new Boss(gl, context);
         boss.setScene(this);
         boss.setHUD(armwing.getHUD());
@@ -90,52 +88,54 @@ public class Scene {
     }
 
     public void draw(GL10 gl) {
-        if (gameEnded) {
+        if (gameEnded) {    // Check if the game has ended (WINTON is dead)
             stairs.draw(gl);    // Only draw the stairs
             gl.glPushMatrix();
             gl.glTranslatef(x, y, z);
-            gp.draw(gl);
+            gp.draw(gl);    // Also draw points on the ground but don't move them
             gl.glPopMatrix();
             return; // Skip the rest of the drawing logic
         }
 
         if (boss.isActivated()) {
-            boss.draw(gl);
+            boss.draw(gl);  // Only draw boss if activated (WINTON)
         }
 
-        switchSpawnMode();
+        switchSpawnMode();  // Try to switch the current spawn mode (alternate waves of enemies with waves of buildings & portals)
 
-        checkArmwingProjectilesCollisions();
-        checkEnemyProjectilesCollisions();
+        checkArmwingProjectilesCollisions();    // Check if Armwing projectiles collide with enemies or boss
+        checkEnemyProjectilesCollisions();  // Check if enemy projectiles collide with Armwing
 
-        z += speed;
+        z += speed; // Move all of the scene
         newZ += speed / 12;
-        armwingZ += speed;
+        armwingZ += speed;  // Have a reference of where in the scene Z coordinates the Armwing is located
 
         gl.glPushMatrix();
         gl.glTranslatef(x, y, z);
-
-        gp.checkAndResetPosition(z, resetThreshold, speed, initialZ);
+        gp.checkAndResetPosition(z, resetThreshold, speed, initialZ);   // Check if ground points have to reset to their original position
         gp.draw(gl);
 
-        despawnObjects();
-        deleteProjectiles();
+        despawnObjects();   // Despawn all of the objects that are past the viewport
+        deleteProjectiles();    // Despawn all of the projectiles that are past the viewport
 
-        // Draw opaque objects first
+        // Draw opaque objects first (to let them be visible through portals semi-transparent interior)
         for (SceneDrawable lmn : dyObjs) {
             lmn.updateScenePos(lmn.getScenePos() + speed);
             lmn.draw(gl);
         }
 
+        // Draw all of the enemies (if there is any)
         for (Enemy enemy : stObjs) {
             enemy.draw(gl);
         }
 
+        // Draw projectiles here so their light affects buildings, portals and enemies
         for (ArmwingProjectile projectile : armwingProjectiles) {
             projectile.updateScenePos(projectile.getScenePos());
             projectile.draw(gl);
         }
 
+        // Draw projectiles here so their light affects buildings, portals and enemies
         for (EnemyProjectile projectile : enemyProjectiles) {
             projectile.updateScenePos(projectile.getScenePos());
             projectile.draw(gl);
@@ -151,13 +151,13 @@ public class Scene {
     }
 
     private void switchSpawnMode() {
-        if (wavesCompleted >= 3) {
-            if (!boss.isActivated()) {
+        if (wavesCompleted >= 3) {  // After 3 enemy waves completed, the boss spawns
+            if (!boss.isActivated()) {  // If boss hasn't been activated yet, activate it and make his health bar show up
                 boss.activate();
                 armwing.getHUD().bossPhase();
-            } else if (boss.isDefeated()) {
+            } else if (boss.isDefeated()) { // If boss has been defeated, prepare end-game scene (WINTON)
                 gameEnded = true;
-                stairs = new Stairs(gl, context);
+                stairs = new Stairs(gl, context);   // Initialize claptrap's biggest weakness!!!
                 armwing.getCam().setEndGameCamView();
                 armwing.setTargetArmwingZ(-5f);
                 speed = 0; // Stop scene movement
@@ -166,11 +166,6 @@ public class Scene {
         }
 
         long currentTime = System.currentTimeMillis();
-
-        // Calculate elapsed time in seconds
-        long elapsedTime = (currentTime - lastModeSwitchTime) / 1000;
-
-        // Print the elapsed time for the current spawn mode
 
         // Switch spawn modes based on time
         if (currentTime - lastModeSwitchTime > 20000) { // Mode duration (20 seconds)
@@ -182,8 +177,8 @@ public class Scene {
 
         // Check if all enemies are defeated
         waveCompleted = enemiesDefeated == maxEnemies;
-        if (currentSpawnMode == SpawnMode.ENEMIES && waveCompleted) {
-            wavesCompleted++;
+        if (currentSpawnMode == SpawnMode.ENEMIES && waveCompleted) {   // If all of the enemies spawned have been killed
+            wavesCompleted++;   // Increment the number of waves completed
             currentSpawnMode = SpawnMode.BUILDINGS_AND_PORTALS;
             lastModeSwitchTime = currentTime;
         }
@@ -201,7 +196,7 @@ public class Scene {
 
         if (currentSpawnMode == SpawnMode.BUILDINGS_AND_PORTALS ||
                 (currentSpawnMode == SpawnMode.ENEMIES && spawnTimeLimit - (currentTime - modeStartTime) <= 4000)) {
-            spawnBuilding(); // Spawn buildings even during ENEMIES mode, 4 seconds before it ends
+            spawnBuilding(); // Spawn buildings even during ENEMIES mode, 4 seconds before it ends, to start filling up scene again
         }
 
         if (currentSpawnMode == SpawnMode.BUILDINGS_AND_PORTALS) {
@@ -211,8 +206,8 @@ public class Scene {
 
             if (enemyTimeLimitReached) {
                 despawnEnemies();  // Remove all enemies if the time is up
-                wavesCompleted++;
-                currentSpawnMode = SpawnMode.BUILDINGS_AND_PORTALS; // Switch back to buildings and portals mode
+                wavesCompleted++;   // Mark wave as completed even though some enemies are still alive
+                currentSpawnMode = SpawnMode.BUILDINGS_AND_PORTALS; // Switch back to buildings & portals mode
                 lastModeSwitchTime = currentTime;  // Reset mode switch time
             }
         }
@@ -278,7 +273,7 @@ public class Scene {
 
     private void spawnEnemy() {
         if(enemiesSpawned >= maxEnemies) {
-            return;
+            return; // If all enemies for that round have been spawned, don't spawn more
         }
 
         // Spawn an enemy every once in a while (randomly)
@@ -287,7 +282,7 @@ public class Scene {
             // Randomize the position of the enemy
             float randomX = (random.nextFloat() * 4.7f) + 11f;
             float randomY = (random.nextFloat() * 1.2f) - 0.2f;
-            float enemyZ = 250 * Math.min(speed, 1.15f);
+            float enemyZ = 250 * Math.min(speed, 1.15f);    // Always on the same z, depending a little on speed
             Enemy newEnemy = enemyPool.getObject();
             if (newEnemy != null) {
                 newEnemy.updateScenePos(0f); // Reset the position for reuse
@@ -311,7 +306,7 @@ public class Scene {
 
     public void shootArmwingProjectile(float armwingX, float armwingY) {
         ArmwingProjectile projectile = armwingProjectilePool.getObject();
-        if (projectile != null) {
+        if (projectile != null) {   // Check if pool had any projectiles in it, if not, do nothing
             projectile.updateScenePos(0);
             projectile.setPosition(armwingX, armwingY, -this.armwingZ + -projectileDespawnThreshold);
             armwingProjectiles.add(projectile);
@@ -321,7 +316,7 @@ public class Scene {
     public void shootEnemyProjectile(float enemyX, float enemyY, float enemyZ, boolean isBoss) {
         EnemyProjectile projectile = enemyProjectilePool.getObject();
         if (isBoss) enemyZ = -this.armwingZ + -projectileDespawnThreshold - 150;
-        if (projectile != null) {
+        if (projectile != null) {   // Check if pool had any projectiles in it, if not, do nothing
             projectile.updateScenePos(0);
             projectile.setPosition(enemyX, enemyY, enemyZ);
             if (isBoss) projectile.markAsBoss();
@@ -334,8 +329,7 @@ public class Scene {
         for (ArmwingProjectile lmn : armwingProjectiles) {
             if (lmn.getScenePos() < projectileDespawnThreshold) {
                 toRemove1.add(lmn); // Add objects to remove to the list
-                // Return objects to their pools
-                armwingProjectilePool.returnObject(lmn);
+                armwingProjectilePool.returnObject(lmn);    // Return objects to their pools
                 lmn.powerOffLight();
             }
         }
@@ -344,8 +338,7 @@ public class Scene {
         for (EnemyProjectile lmn : enemyProjectiles) {
             if (lmn.getScenePos() > despawnThreshold/4) {
                 toRemove2.add(lmn); // Add objects to remove to the list
-                // Return objects to their pools
-                enemyProjectilePool.returnObject(lmn);
+                enemyProjectilePool.returnObject(lmn);  // Return objects to their pools
                 lmn.powerOffLight();
             }
         }
@@ -364,18 +357,16 @@ public class Scene {
 
             if (boss.isActivated()) {
                 float bossX = boss.getX();
-                float bossZ = -200f;
+                float bossZ = -200f;    // Boss' Z is always the same
 
-                float collisionThreshold = 30f;
-
+                float collisionThreshold = 30f; // Boss is a BIG BOI, so this threshold is bigger
 
                 // If all three axes collide
                 if (Math.abs(projX - bossX) < collisionThreshold &&
                         Math.abs(projZ - bossZ) < collisionThreshold) {
                     toRemoveProjectiles.add(projectile);
-                    // Return objects to their pools
-                    armwingProjectilePool.returnObject(projectile);
-                    boss.setShieldPercentage(boss.getShieldPercentage() - 0.05f);
+                    armwingProjectilePool.returnObject(projectile); // Return objects to their pools
+                    boss.setShieldPercentage(boss.getShieldPercentage() - 0.025f);
                     break;
                 }
                 return;
@@ -387,18 +378,17 @@ public class Scene {
                 // Get the position of the enemy
                 float enemyX = enemy.getX();
                 float enemyY = enemy.getY();
-                float enemyZ = enemy.getScenePos();
+                float enemyZ = enemy.getScenePos() + 100;
 
                 // If all three axes collide
                 if (Math.abs(projX - enemyX) < collisionThreshold &&
                         Math.abs(projY - enemyY) < collisionThreshold &&
                         Math.abs(projZ - enemyZ) < collisionThreshold) {
-                    // Handle collision: Remove the projectile and the enemy
+                    // Remove the projectile and the enemy
                     toRemoveProjectiles.add(projectile);
                     toRemoveEnemies.add(enemy);
                     enemiesDefeated++;
-                    // Exit the loop to avoid multiple collisions with the same projectile
-                    break;
+                    break;  // Exit the loop to avoid multiple collisions with the same projectile
                 }
             }
         }
@@ -438,12 +428,11 @@ public class Scene {
             if (Math.abs(projX - armwingXMapped) < collisionThreshold &&
                     Math.abs(projY - armwingYMapped) < collisionThreshold &&
                     Math.abs(projZ - armwingZMapped) < collisionThreshold) {
-                // Handle collision: Remove the projectile and lower armwing's shield
+                // Remove the projectile and lower Armwing's shield
                 toRemoveProjectiles.add(projectile);
                 armwing.setShieldPercentage(armwing.getShieldPercentage() - 0.10f);
                 armwing.getCam().startShake(0.1f, 0.1f);
-                // Exit the loop to avoid multiple collisions with the same projectile
-                break;
+                break;  // Exit the loop to avoid multiple collisions with the same projectile
             }
         }
 

@@ -74,7 +74,7 @@ public class MyOpenGLRenderer implements Renderer {
 		// Set the general light's position
 		light.setPosition(new float[]{0, 2f, -2, 0});
 
-        camera.setCameraView(gl, armwing, halfWidth, halfHeight);
+		camera.setCameraView(gl, armwing, halfWidth, halfHeight);
 		bg.draw(gl, light);
 		armwing.draw(gl);
 		drawScene(gl);

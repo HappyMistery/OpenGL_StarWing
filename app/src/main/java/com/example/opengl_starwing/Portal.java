@@ -105,7 +105,7 @@ public class Portal implements SceneDrawable{
             float COLLISION_THRESHOLD = 1f;
             if ((Math.abs(armwingX - mappedPortalX) < COLLISION_THRESHOLD) &&
                     (Math.abs(armwingY - mappedPortalY) < COLLISION_THRESHOLD) &&
-                    (sceneZ >= 450f) && (sceneZ <= 455f)) { // If all axes coincide, the Armwing passed through the portal
+                    (sceneZ >= 430f) && (sceneZ <= 435f)) { // If all axes coincide, the Armwing passed through the portal
                 armwing.setBoostPercentage(armwing.getBoostPercentage() + 0.5f);
                 collided = true;    // Flag that the Armwing has passed through this building so that it doesn't pass through again
             }

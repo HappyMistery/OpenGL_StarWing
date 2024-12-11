@@ -6,26 +6,30 @@ import javax.microedition.khronos.opengles.GL10;
 
 public class ArmwingProjectile implements SceneDrawable {
     private final Object3D projectile;
-    private final Light light;
+    private Light light;
     private float x, y, z, sceneZ;
     private float rotation = 0f;
     private final float VELOCITY_Z = -6f;
+    private final GL10 gl;
 
 
     public ArmwingProjectile(GL10 gl, Context context, float x, float y, float z) {
-        // Load projectile model
         projectile = new Object3D(context, R.raw.projectile);
         projectile.loadTexture(gl, context, R.drawable.paleta);
-
+        this.gl = gl;
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+
+    // Place the projectile in the scene with the scene coordinate system
+    public void setPosition(float projX, float projY, float projZ) {
+        x = mapArmwingXToSceneX(projX) + 325;
+        y = mapArmwingYTosceneY(projY);
+        z = projZ;
 
         // Initialize and configure the light
         light = new Light(gl, GL10.GL_LIGHT2);
-        light.setDiffuseColor(new float[]{0.2f, 0.2f, 0.6f, 1.0f}); // Blue-ish light
-        light.setSpecularColor(new float[]{0.5f, 0.5f, 0.5f, 1.0f});
-        light.setAttenuation(1.0f, 0.1f, 0.02f);    // Make the light decay faster
     }
 
     @Override
@@ -64,6 +68,9 @@ public class ArmwingProjectile implements SceneDrawable {
         gl.glPopMatrix();
 
         light.setPosition(new float[]{x, y, z, 1.0f});  // Update the light position to follow the projectile
+        light.setDiffuseColor(new float[]{0.2f, 0.2f, 0.6f, 1.0f}); // Blue-ish light
+        light.setSpecularColor(new float[]{0.5f, 0.5f, 0.5f, 1.0f});
+        light.setAttenuation(1.0f, 0.1f, 0.02f);    // Make the light decay faster
         light.enable();
     }
 
@@ -91,13 +98,6 @@ public class ArmwingProjectile implements SceneDrawable {
         float armwingYRange = armwingYMax - armwingYMin;    // Calculate the scene's coords range (eg. from -1 to 1.3)
 
         return ((sceneYRange / armwingYRange) * (y - armwingYMin)) + sceneYMin; // Map the coordinates
-    }
-
-    // Place the projectile in the scene with the scene coordinate system
-    public void setPosition(float projX, float projY, float projZ) {
-        x = mapArmwingXToSceneX(projX) + 325;
-        y = mapArmwingYTosceneY(projY);
-        z = projZ;
     }
 
     @Override
